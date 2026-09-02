@@ -11,7 +11,7 @@ module.exports = {
         id: EDITION_2025_ID,
         year: 2025,
         title: 'The Carnival Queen 2025',
-        theme: 'Elixr',
+        theme: 'Heritage & Grace',
         isCurrent: false,
         eventDate: new Date('2025-12-13T18:00:00Z'),
         description: 'The inaugural edition of The Carnival Queen.',

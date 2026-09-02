@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 
 module.exports = {
   async up(queryInterface) {
-    const password = await bcrypt.hash('111111', 12);
+    const password = await bcrypt.hash('Password123!', 12);
     const now = new Date();
 
     const superAdminId = uuidv4();
@@ -16,7 +16,7 @@ module.exports = {
       {
         id: superAdminId,
         fullName: 'Mega Admin',
-        email: 'admin@carnivalqueen.com',
+        email: 'admin@carnivalqueen.test',
         phone: '08000000001',
         password,
         role: 'superadmin',
@@ -29,7 +29,7 @@ module.exports = {
         // no access to Transactions or revenue figures. See adminRoutes.js.
         id: adminId,
         fullName: 'Door Manager',
-        email: 'manager@carnivalqueen.com',
+        email: 'manager@carnivalqueen.test',
         phone: '08000000004',
         password,
         role: 'admin',
@@ -40,7 +40,7 @@ module.exports = {
       {
         id: staffId,
         fullName: 'Door Staff',
-        email: 'staff@carnivalqueen.com',
+        email: 'staff@carnivalqueen.test',
         phone: '08000000002',
         password,
         role: 'staff',
@@ -50,13 +50,13 @@ module.exports = {
       },
       {
         id: voterId,
-        fullName: 'Adariku Michael',
-        email: 'adarikumichael@gmail.com',
+        fullName: 'Test Voter',
+        email: 'voter@carnivalqueen.test',
         phone: '08000000003',
         password,
         role: 'voter',
         isActive: true,
-        emailVerifiedAt: now,
+        emailVerifiedAt: now, // seeded demo account - skips the real verification flow
 
         createdAt: now, updatedAt: now
       }
@@ -66,13 +66,13 @@ module.exports = {
       { id: uuidv4(), userId: superAdminId, coinBalance: 0, createdAt: now, updatedAt: now },
       { id: uuidv4(), userId: adminId, coinBalance: 0, createdAt: now, updatedAt: now },
       { id: uuidv4(), userId: staffId, coinBalance: 0, createdAt: now, updatedAt: now },
-      { id: uuidv4(), userId: voterId, coinBalance: 100000, createdAt: now, updatedAt: now } // pre-loaded for testing votes
+      { id: uuidv4(), userId: voterId, coinBalance: 10000, createdAt: now, updatedAt: now } // pre-loaded for testing votes
     ]);
   },
 
   async down(queryInterface) {
     await queryInterface.bulkDelete('users', {
-      email: ['admin@carnivalqueen.com', 'manager@carnivalqueen.com', 'staff@carnivalqueen.com', 'voter@carnivalqueen.com']
+      email: ['admin@carnivalqueen.test', 'manager@carnivalqueen.test', 'staff@carnivalqueen.test', 'voter@carnivalqueen.test']
     });
   }
 };

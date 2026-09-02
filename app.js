@@ -23,7 +23,7 @@ const io = new Server(server);
 // object, that's gone. Keeping this at the very top (not just "before the
 // body parsers" further down) means it can never accidentally end up
 // after them, however this file gets edited later.
-
+app.use('/webhooks', require('./routes/webhookRoutes'));
 
 // Trust the first proxy hop (ngrok, or a reverse proxy in production) so
 // req.protocol reflects X-Forwarded-Proto correctly - needed for getBaseUrl()
@@ -77,7 +77,6 @@ app.use('/tickets', require('./routes/ticketRoutes'));
 app.use('/apply', require('./routes/applicationRoutes'));
 app.use('/admin', require('./routes/adminRoutes'));
 app.use('/staff', require('./routes/staffRoutes'));
-app.use('/webhook', require('./routes/webhookRoutes'));
 
 // 404
 app.use((req, res) => {

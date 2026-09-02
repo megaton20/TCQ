@@ -116,6 +116,19 @@ Ticket), then looks up any related row (Edition, TicketTier) in a separate, unlo
 afterward. If you add new locked queries anywhere, keep this pattern - never combine
 `lock: t.LOCK.UPDATE` with `include` in the same query.
 
+## 3e. Troubleshooting: "sh: 1: tailwindcss: not found" on Render (or similar hosts)
+
+Render (and several other Node hosts) set `NODE_ENV=production` during the build step by default,
+which makes `npm install` skip everything in `devDependencies` entirely. The `postinstall` hook
+still tries to run `npm run build:css`, which needs the `tailwindcss` binary - if it's not installed,
+that fails and takes the whole build down with it.
+
+Already fixed in `package.json`: `tailwindcss`, `postcss`, and `autoprefixer` live in `dependencies`,
+not `devDependencies`, specifically so they always install regardless of `NODE_ENV`. If you ever add
+another build-time tool that a `postinstall`/`prestart` script depends on, keep it in `dependencies`
+too, not `devDependencies` - `devDependencies` is only safe for things that never run as part of the
+actual build or start command (test runners, `nodemon`, etc.).
+
 ## 4. Paystack webhook (required for coins/tickets to actually credit)
 
 Bundle purchases and ticket purchases both redirect through Paystack checkout, but the **webhook** is
