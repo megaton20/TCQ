@@ -1,9 +1,11 @@
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const QRCode = require('qrcode');
 const { customAlphabet } = require('nanoid');
 const { v4: uuidv4 } = require('uuid');
-const { sequelize, Ticket, TicketTier, TableMember, Event, Transaction, User } = require('../models');
+const { sequelize, Ticket, TicketTier, TableMember, Event, Transaction, User, Wallet } = require('../models');
 const paystack = require('../utils/paystack');
 const { emitAdminFeed, emitRevenueFeed } = require('../utils/adminFeed');
 const { cloudinary } = require('../config/cloudinary');
@@ -199,6 +201,89 @@ async function confirmTicketPurchase(io, reference) {
 async function markTicketPurchaseFailed(reference) {
   await Ticket.update({ status: 'cancelled' }, { where: { paystackReference: reference } });
   await Transaction.update({ status: 'failed' }, { where: { paystackReference: reference } });
+}
+
+/**
+ * Superadmin issues a ticket directly - no Paystack involved, no charge.
+ * Used for comp tickets, VIP guests, press, etc. Finds an existing account
+ * by email or creates a minimal pre-verified one (admin-issued accounts
+ * skip the email verification wall) so the ticket has somewhere to live in
+ * "My Tickets". Goes straight to `valid` with a real QR code, same as a
+ * paid ticket.
+ */
+async function issueManualTicket({ eventId, ticketTierId, holderName, email, issuedByUserId }) {
+  const tier = await TicketTier.findByPk(ticketTierId);
+  if (!tier || tier.eventId !== eventId) throw new Error('That ticket tier does not belong to this event.');
+
+  let buyer = await User.findOne({ where: { email } });
+  if (!buyer) {
+    const randomPassword = crypto.randomBytes(16).toString('hex');
+    buyer = await User.create({
+      fullName: holderName,
+      email,
+      password: await bcrypt.hash(randomPassword, 12),
+      role: 'voter',
+      emailVerifiedAt: new Date() // admin-issued account, skip the verification wall
+    });
+    await Wallet.create({ userId: buyer.id, coinBalance: 0 });
+  }
+
+  const ticketCode = uuidv4();
+  const fallbackCode = `CQ-${generateFallbackCode()}`;
+
+  const ticket = await Ticket.create({
+    eventId,
+    userId: buyer.id,
+    ticketTierId,
+    ticketCode,
+    fallbackCode,
+    holderName,
+    priceNaira: tier.priceNaira,
+    status: 'valid'
+  });
+
+  const qrFilename = `${ticketCode}.png`;
+  const qrPath = path.join(QR_DIR, qrFilename);
+  await QRCode.toFile(qrPath, ticketCode, { width: 500, margin: 2 });
+  ticket.qrImageUrl = `/public/uploads/tickets/${qrFilename}`;
+  await ticket.save();
+
+  try {
+    const uploadResult = await cloudinary.uploader.upload(qrPath, {
+      folder: 'carnival-queen/ticket-qrs', public_id: ticketCode, overwrite: true
+    });
+    ticket.qrImageCloudinaryUrl = uploadResult.secure_url;
+    ticket.qrImageCloudinaryPublicId = uploadResult.public_id;
+    await ticket.save();
+  } catch (err) {
+    console.error(`Cloudinary QR upload failed for manually-issued ticket ${ticket.id}:`, err.message);
+  }
+
+  await Event.increment('ticketsSold', { by: 1, where: { id: eventId } });
+  await TicketTier.increment('quantitySold', { by: 1, where: { id: ticketTierId } });
+
+  if (tier.tierType === 'table') {
+    await TableMember.create({ ticketId: ticket.id, fullName: holderName, isOwner: true });
+  }
+
+  await Transaction.create({
+    userId: buyer.id,
+    type: 'ticket_purchase',
+    ticketId: ticket.id,
+    amountNaira: 0, // comp ticket - no charge, regardless of the tier's normal price
+    status: 'success',
+    metadata: { issuedManuallyBy: issuedByUserId, comp: true }
+  });
+
+  try {
+    const event = await Event.findByPk(eventId);
+    const { sent } = await sendTicketEmail(buyer, ticket, event, tier);
+    if (sent) { ticket.ticketEmailSentAt = new Date(); await ticket.save(); }
+  } catch (err) {
+    console.error(`Comp ticket email failed for ticket ${ticket.id}:`, err.message);
+  }
+
+  return ticket;
 }
 
 /** Full ticket detail including tier + roster, scoped to its owner. */
@@ -408,6 +493,7 @@ module.exports = {
   initiateTicketPurchase,
   confirmTicketPurchase,
   markTicketPurchaseFailed,
+  issueManualTicket,
   getTicketForOwner,
   addTableMember,
   removeTableMember,

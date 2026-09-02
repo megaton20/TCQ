@@ -6,6 +6,8 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 const { uploadContestantImages, uploadGalleryImages } = require('../config/cloudinary');
 const { getActiveKeyMode } = require('../utils/paystack');
 const { getDoorEntries } = require('../utils/doorEntries');
+const { emitAdminFeed } = require('../utils/adminFeed');
+const ticketService = require('../services/ticketService');
 const {
   Edition, Contestant, ContestantImage, ContestantApplication,
   CoinBundle, Event, Transaction, User, Ticket, TicketTier, TableMember, Vote
@@ -103,7 +105,78 @@ router.get('/contestants', async (req, res, next) => {
       include: [{ model: ContestantImage, as: 'images' }, { model: Edition, as: 'edition' }],
       order: [['createdAt', 'DESC']]
     });
-    res.render('admin/contestants', { title: 'Manage Contestants', contestants });
+    const editions = await Edition.findAll({ order: [['year', 'DESC']] });
+    res.render('admin/contestants', {
+      title: 'Manage Contestants', contestants, editions,
+      isSuperAdmin: req.currentUser.role === 'superadmin'
+    });
+  } catch (err) { next(err); }
+});
+
+// Full contestant CRUD (create/edit/delete) is superadmin-only - regular
+// admin still approves applications, uploads photos, sets placement, and
+// changes status via the routes below, unchanged.
+router.get('/contestants/new', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const editions = await Edition.findAll({ order: [['year', 'DESC']] });
+    res.render('admin/contestant-form', { title: 'Add Contestant', contestant: null, editions });
+  } catch (err) { next(err); }
+});
+
+router.post('/contestants', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const b = req.body;
+    await Contestant.create({
+      editionId: b.editionId,
+      fullName: b.fullName,
+      slug: slugify(`${b.fullName}-${Date.now()}`, { lower: true }),
+      contestantNumber: b.contestantNumber || null,
+      stateOfOrigin: b.stateOfOrigin || null,
+      age: b.age || null,
+      occupation: b.occupation || null,
+      bio: b.bio || null,
+      tagline: b.tagline || null,
+      instagramHandle: b.instagramHandle || null,
+      status: b.status || 'approved'
+    });
+    req.flash('success', 'Contestant created.');
+    res.redirect('/admin/contestants');
+  } catch (err) { next(err); }
+});
+
+router.get('/contestants/:id/edit', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const contestant = await Contestant.findByPk(req.params.id);
+    if (!contestant) return res.status(404).render('404', { title: 'Contestant Not Found' });
+    const editions = await Edition.findAll({ order: [['year', 'DESC']] });
+    res.render('admin/contestant-form', { title: 'Edit Contestant', contestant, editions });
+  } catch (err) { next(err); }
+});
+
+router.post('/contestants/:id', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const b = req.body;
+    await Contestant.update({
+      editionId: b.editionId,
+      fullName: b.fullName,
+      contestantNumber: b.contestantNumber || null,
+      stateOfOrigin: b.stateOfOrigin || null,
+      age: b.age || null,
+      occupation: b.occupation || null,
+      bio: b.bio || null,
+      tagline: b.tagline || null,
+      instagramHandle: b.instagramHandle || null
+    }, { where: { id: req.params.id } });
+    req.flash('success', 'Contestant updated.');
+    res.redirect('/admin/contestants');
+  } catch (err) { next(err); }
+});
+
+router.post('/contestants/:id/delete', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    await Contestant.destroy({ where: { id: req.params.id } }); // cascades to images/votes via FK
+    req.flash('success', 'Contestant deleted.');
+    res.redirect('/admin/contestants');
   } catch (err) { next(err); }
 });
 
@@ -260,7 +333,10 @@ router.get('/events', async (req, res, next) => {
       include: [{ model: TicketTier, as: 'tiers', order: [['sortOrder', 'ASC']] }],
       order: [['eventDate', 'DESC']]
     });
-    res.render('admin/events', { title: 'Events & Tickets', events });
+    res.render('admin/events', {
+      title: 'Events & Tickets', events,
+      isSuperAdmin: req.currentUser.role === 'superadmin'
+    });
   } catch (err) { next(err); }
 });
 
@@ -277,6 +353,33 @@ router.post('/events', async (req, res, next) => {
       capacity: b.capacity || null
     });
     req.flash('success', 'Event created. Now add ticket tiers (Regular, VIP, Table for 5/10) below.');
+    res.redirect('/admin/events');
+  } catch (err) { next(err); }
+});
+
+// Editing/deleting an event outright (not just creating one) is
+// superadmin-only - deleting cascades to its ticket tiers and every ticket
+// sold against it.
+router.post('/events/:id', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const b = req.body;
+    await Event.update({
+      name: b.name,
+      description: b.description,
+      venue: b.venue,
+      eventDate: b.eventDate,
+      capacity: b.capacity || null,
+      isActive: b.isActive === 'on'
+    }, { where: { id: req.params.id } });
+    req.flash('success', 'Event updated.');
+    res.redirect('/admin/events');
+  } catch (err) { next(err); }
+});
+
+router.post('/events/:id/delete', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    await Event.destroy({ where: { id: req.params.id } }); // cascades to tiers + tickets via FK
+    req.flash('success', 'Event deleted.');
     res.redirect('/admin/events');
   } catch (err) { next(err); }
 });
@@ -304,6 +407,33 @@ router.post('/tiers/:id/toggle', async (req, res, next) => {
     const tier = await TicketTier.findByPk(req.params.id);
     tier.isActive = !tier.isActive;
     await tier.save();
+    res.redirect('/admin/events');
+  } catch (err) { next(err); }
+});
+
+// Editing a tier's actual details (price, seats, name) and deleting it
+// outright are superadmin-only - toggling active/inactive above stays
+// available to regular admin.
+router.post('/tiers/:id', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const b = req.body;
+    const tierType = b.tierType === 'table' ? 'table' : 'single';
+    await TicketTier.update({
+      name: b.name,
+      tierType,
+      seatsIncluded: tierType === 'table' ? (parseInt(b.seatsIncluded, 10) || 5) : 1,
+      priceNaira: b.priceNaira,
+      quantityAvailable: b.quantityAvailable || null
+    }, { where: { id: req.params.id } });
+    req.flash('success', 'Ticket tier updated.');
+    res.redirect('/admin/events');
+  } catch (err) { next(err); }
+});
+
+router.post('/tiers/:id/delete', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    await TicketTier.destroy({ where: { id: req.params.id } }); // tickets already sold keep their data, just lose the tier link (FK is SET NULL)
+    req.flash('success', 'Ticket tier deleted.');
     res.redirect('/admin/events');
   } catch (err) { next(err); }
 });
@@ -368,6 +498,84 @@ router.get('/door-entries', async (req, res, next) => {
   try {
     const entries = await getDoorEntries();
     res.render('admin/door-entries', { title: 'Door Entry Records', entries });
+  } catch (err) { next(err); }
+});
+
+// --- Tickets (superadmin-only throughout - shows prices/payment references) ---
+router.get('/tickets', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const tickets = await Ticket.findAll({
+      include: [
+        { model: Event, as: 'event' },
+        { model: TicketTier, as: 'tier' },
+        { model: User, as: 'buyer', attributes: ['fullName', 'email'] }
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: 300
+    });
+    res.render('admin/tickets', { title: 'Manage Tickets', tickets });
+  } catch (err) { next(err); }
+});
+
+router.get('/tickets/new', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const events = await Event.findAll({
+      where: { isActive: true },
+      include: [{ model: TicketTier, as: 'tiers', where: { isActive: true }, required: false }],
+      order: [['eventDate', 'ASC']]
+    });
+    res.render('admin/ticket-form', { title: 'Issue Ticket', ticket: null, events });
+  } catch (err) { next(err); }
+});
+
+router.post('/tickets', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const b = req.body;
+    const ticket = await ticketService.issueManualTicket({
+      eventId: b.eventId,
+      ticketTierId: b.ticketTierId,
+      holderName: b.holderName,
+      email: b.email,
+      issuedByUserId: req.currentUser.id
+    });
+    emitAdminFeed(req.app.get('io'), {
+      type: 'ticket_checkin',
+      message: `${req.currentUser.fullName} manually issued a ticket to ${ticket.holderName}`,
+      meta: { ticketId: ticket.id }
+    });
+    req.flash('success', `Ticket issued to ${ticket.holderName}.`);
+    res.redirect('/admin/tickets');
+  } catch (err) {
+    req.flash('error', err.message);
+    res.redirect('/admin/tickets/new');
+  }
+});
+
+router.get('/tickets/:id/edit', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const ticket = await Ticket.findByPk(req.params.id, { include: [{ model: Event, as: 'event' }, { model: TicketTier, as: 'tier' }] });
+    if (!ticket) return res.status(404).render('404', { title: 'Ticket Not Found' });
+    res.render('admin/ticket-form', { title: 'Edit Ticket', ticket, events: [] });
+  } catch (err) { next(err); }
+});
+
+router.post('/tickets/:id', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const b = req.body;
+    await Ticket.update({
+      holderName: b.holderName,
+      status: b.status
+    }, { where: { id: req.params.id } });
+    req.flash('success', 'Ticket updated.');
+    res.redirect('/admin/tickets');
+  } catch (err) { next(err); }
+});
+
+router.post('/tickets/:id/delete', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    await Ticket.destroy({ where: { id: req.params.id } }); // cascades to table members via FK
+    req.flash('success', 'Ticket deleted.');
+    res.redirect('/admin/tickets');
   } catch (err) { next(err); }
 });
 

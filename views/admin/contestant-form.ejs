@@ -1,0 +1,89 @@
+<section class="max-w-2xl mx-auto px-4 py-10">
+  <a href="/admin/contestants" class="text-sm text-carnival-green font-semibold hover:underline">
+    <i class="fa-solid fa-arrow-left mr-1"></i> Back to Contestants
+  </a>
+
+  <h1 class="text-2xl font-bold text-carnival-green mt-4 mb-6">
+    <%= contestant ? 'Edit Contestant' : 'Add Contestant' %>
+  </h1>
+
+  <form action="<%= contestant ? `/admin/contestants/${contestant.id}` : '/admin/contestants' %>" method="POST"
+        class="bg-white rounded-2xl shadow p-6 grid grid-cols-2 gap-4">
+    <div class="col-span-2">
+      <label class="block text-sm font-medium mb-1">Edition</label>
+      <select name="editionId" required class="w-full border rounded-lg px-3 py-2">
+        <% editions.forEach(e => { %>
+          <option value="<%= e.id %>" <%= contestant && contestant.editionId === e.id ? 'selected' : '' %>>
+            <%= e.title %> (<%= e.year %>)
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="col-span-2">
+      <label class="block text-sm font-medium mb-1">Full Name</label>
+      <input name="fullName" value="<%= contestant ? contestant.fullName : '' %>" required class="w-full border rounded-lg px-3 py-2">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Contestant Number</label>
+      <input name="contestantNumber" type="number" value="<%= contestant ? (contestant.contestantNumber || '') : '' %>" class="w-full border rounded-lg px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Age</label>
+      <input name="age" type="number" value="<%= contestant ? (contestant.age || '') : '' %>" class="w-full border rounded-lg px-3 py-2">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">State of Origin</label>
+      <input name="stateOfOrigin" value="<%= contestant ? (contestant.stateOfOrigin || '') : '' %>" class="w-full border rounded-lg px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Occupation</label>
+      <input name="occupation" value="<%= contestant ? (contestant.occupation || '') : '' %>" class="w-full border rounded-lg px-3 py-2">
+    </div>
+
+    <div class="col-span-2">
+      <label class="block text-sm font-medium mb-1">Tagline</label>
+      <input name="tagline" value="<%= contestant ? (contestant.tagline || '') : '' %>" placeholder="e.g. Beauty with a purpose" class="w-full border rounded-lg px-3 py-2">
+    </div>
+
+    <div class="col-span-2">
+      <label class="block text-sm font-medium mb-1">Instagram Handle</label>
+      <input name="instagramHandle" value="<%= contestant ? (contestant.instagramHandle || '') : '' %>" class="w-full border rounded-lg px-3 py-2">
+    </div>
+
+    <div class="col-span-2">
+      <label class="block text-sm font-medium mb-1">Bio</label>
+      <textarea name="bio" rows="4" class="w-full border rounded-lg px-3 py-2"><%= contestant ? (contestant.bio || '') : '' %></textarea>
+    </div>
+
+    <% if (!contestant) { %>
+      <div class="col-span-2">
+        <label class="block text-sm font-medium mb-1">Status</label>
+        <select name="status" class="w-full border rounded-lg px-3 py-2">
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+        </select>
+      </div>
+    <% } %>
+
+    <div class="col-span-2 flex gap-3">
+      <button class="flex-1 bg-carnival-green text-white font-semibold py-2 rounded-full hover:opacity-90">
+        <%= contestant ? 'Save Changes' : 'Create Contestant' %>
+      </button>
+    </div>
+  </form>
+
+  <% if (contestant) { %>
+    <form action="/admin/contestants/<%= contestant.id %>/delete" method="POST" class="mt-4"
+          onsubmit="return confirm('Delete this contestant permanently? This also removes their photos and vote history. This cannot be undone.');">
+      <button class="w-full bg-white border border-red-200 text-red-600 font-semibold py-2 rounded-full hover:bg-red-50">
+        <i class="fa-solid fa-trash mr-1"></i> Delete Contestant
+      </button>
+    </form>
+    <p class="text-xs text-gray-400 text-center mt-3">
+      Photos and blog content are managed from the <a href="/admin/contestants" class="underline">Contestants list</a>.
+    </p>
+  <% } %>
+</section>

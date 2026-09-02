@@ -1,0 +1,56 @@
+<section class="max-w-6xl mx-auto px-4 py-10">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-carnival-green">Manage Tickets</h1>
+    <a href="/admin/tickets/new" class="bg-carnival-green text-white text-sm font-semibold px-4 py-2 rounded-full hover:opacity-90">
+      <i class="fa-solid fa-plus mr-1"></i> Issue Ticket
+    </a>
+  </div>
+  <p class="text-sm text-gray-500 mb-6">Every ticket sold or issued, newest first. Issuing here (comp/press/VIP guests) skips payment entirely and goes straight to a valid, scannable ticket.</p>
+
+  <div class="bg-white rounded-2xl shadow overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-left">
+        <tr>
+          <th class="p-3">Holder</th>
+          <th class="p-3">Event</th>
+          <th class="p-3">Tier</th>
+          <th class="p-3">Buyer</th>
+          <th class="p-3">Price</th>
+          <th class="p-3">Status</th>
+          <th class="p-3">Issued</th>
+          <th class="p-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y">
+        <% tickets.forEach(t => { %>
+          <tr class="hover:bg-gray-50">
+            <td class="p-3 font-semibold"><%= t.holderName %></td>
+            <td class="p-3"><%= t.event ? t.event.name : '-' %></td>
+            <td class="p-3"><%= t.tier ? t.tier.name : 'General' %></td>
+            <td class="p-3 text-gray-500"><%= t.buyer ? t.buyer.email : '-' %></td>
+            <td class="p-3"><%= Number(t.priceNaira) === 0 ? 'Comp' : '₦' + Number(t.priceNaira).toLocaleString() %></td>
+            <td class="p-3">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full
+                <%= t.status === 'valid' ? 'bg-green-100 text-green-700'
+                    : (t.status === 'used' ? 'bg-gray-100 text-gray-500'
+                    : (t.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700')) %>">
+                <%= t.status.replace('_', ' ') %>
+              </span>
+            </td>
+            <td class="p-3 text-gray-500"><%= new Date(t.createdAt).toLocaleDateString() %></td>
+            <td class="p-3 text-right whitespace-nowrap">
+              <a href="/admin/tickets/<%= t.id %>/edit" class="text-carnival-green font-semibold hover:underline mr-3">Edit</a>
+              <form action="/admin/tickets/<%= t.id %>/delete" method="POST" class="inline"
+                    onsubmit="return confirm('Delete this ticket permanently? This cannot be undone.');">
+                <button class="text-red-500 font-semibold">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (!tickets.length) { %>
+          <tr><td colspan="8" class="p-6 text-center text-gray-400">No tickets yet.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</section>

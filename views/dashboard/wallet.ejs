@@ -8,7 +8,7 @@
     <p class="text-4xl font-extrabold flex items-center gap-2 mb-1">
       <i class="fa-solid fa-coins text-carnival-gold text-2xl"></i>
       <%= Number(wallet.coinBalance).toLocaleString() %>
-      <span class="text-base font-medium text-white/60">coins</span>
+      <span class="text-base font-medium text-white/60">votes</span>
     </p>
     <a href="/wallet/buy" class="inline-flex items-center gap-2 mt-4 bg-carnival-gold text-carnival-green font-semibold px-5 py-2 rounded-full hover:opacity-90">
       <i class="fa-solid fa-plus"></i> Top Up
@@ -34,7 +34,7 @@
           <% if (t.amountNaira) { %>
             <p class="font-bold <%= isCredit ? 'text-green-600' : 'text-gray-700' %>"><%= isCredit ? '+' : '' %>₦<%= Number(t.amountNaira).toLocaleString() %></p>
           <% } else if (t.coinAmount) { %>
-            <p class="font-bold text-red-500">&minus;<%= Number(t.coinAmount).toLocaleString() %> coins</p>
+            <p class="font-bold text-red-500">&minus;<%= Number(t.coinAmount).toLocaleString() %> votes</p>
           <% } %>
           <p class="capitalize text-[10px] font-semibold <%= t.status === 'success' ? 'text-green-600' : (t.status === 'failed' ? 'text-red-600' : 'text-yellow-600') %>"><%= t.status %></p>
         </div>

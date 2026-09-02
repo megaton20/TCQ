@@ -7,19 +7,19 @@ const EDITION_2026_ID = '22222222-2222-2222-2222-222222222222';
 const PLACEHOLDER = '/public/img/placeholder.jpg';
 
 // Fixed IDs so other seeders (e.g. votes, if you add a demo-votes seeder later) can reference them.
-const CONTESTANTS_2025 = [
-  { id: '33333333-0000-0000-0000-000000000001', name: 'Cleopatra Otu', state: 'Cross River', number: 1, isWinner: true, position: 'Queen',
-    blogContent: 'Since being crowned, Amara has dedicated her reign to community health outreach across Cross River State, partnering with local clinics to provide free health screenings and school supplies to underserved communities. Her "Health for Her" initiative has reached over 500 women and children so far, and she continues to visit local schools to speak about education and self-confidence.' },
-  { id: '33333333-0000-0000-0000-000000000002', name: 'Anwuli Oraemeka', state: 'Anambra', number: 2, position: '1st Runner-up' },
-  { id: '33333333-0000-0000-0000-000000000003', name: 'Esther Edet', state: 'Cross River', number: 3, position: '2nd Runner-up' }
-];
+// const CONTESTANTS_2025 = [
+//   { id: '33333333-0000-0000-0000-000000000001', name: 'Amara Bassey', state: 'Cross River', number: 1, isWinner: true, position: 'Queen',
+//     blogContent: 'Since being crowned, Amara has dedicated her reign to community health outreach across Cross River State, partnering with local clinics to provide free health screenings and school supplies to underserved communities. Her "Health for Her" initiative has reached over 500 women and children so far, and she continues to visit local schools to speak about education and self-confidence.' },
+//   { id: '33333333-0000-0000-0000-000000000002', name: 'Ifeoma Chukwu', state: 'Anambra', number: 2, position: '1st Runner-up' },
+//   { id: '33333333-0000-0000-0000-000000000003', name: 'Zainab Bello', state: 'Kano', number: 3, position: '2nd Runner-up' }
+// ];
 
-const CONTESTANTS_2026 = [
-  { id: '44444444-0000-0000-0000-000000000001', name: 'Grace Effiong', state: 'Cross River', number: 1 },
-  { id: '44444444-0000-0000-0000-000000000002', name: 'Blessing Okon', state: 'Akwa Ibom', number: 2 },
-  { id: '44444444-0000-0000-0000-000000000003', name: 'Chiamaka Obi', state: 'Enugu', number: 3 },
-  { id: '44444444-0000-0000-0000-000000000004', name: 'Halima Yusuf', state: 'Kaduna', number: 4 }
-];
+// const CONTESTANTS_2026 = [
+//   { id: '44444444-0000-0000-0000-000000000001', name: 'Grace Effiong', state: 'Cross River', number: 1 },
+//   { id: '44444444-0000-0000-0000-000000000002', name: 'Blessing Okon', state: 'Akwa Ibom', number: 2 },
+//   { id: '44444444-0000-0000-0000-000000000003', name: 'Chiamaka Obi', state: 'Enugu', number: 3 },
+//   { id: '44444444-0000-0000-0000-000000000004', name: 'Halima Yusuf', state: 'Kaduna', number: 4 }
+// ];
 
 function buildContestantRows(list, editionId, now) {
   return list.map((c) => ({

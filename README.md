@@ -166,7 +166,8 @@ will start applying automatically — no code changes needed.
 
 - **voter** — default signup, can vote, buy coins, buy tickets, apply to be a contestant.
 - **staff** — check-in only (`/staff/checkin`), no access to the admin dashboard. Promote a user to staff directly in the `users` table (`role = 'staff'`) until you build a staff-invite UI.
-- **admin / superadmin** — full back office at `/admin`: approve applications, manage contestants/photos/editions/bundles/events, view transactions, toggle staff accounts.
+- **admin** — back office at `/admin`: approve applications, manage contestant photos/placement/status, editions, coin bundle catalog, event/tier creation, table management, staff accounts, and Door Entry Records. No revenue visibility.
+- **superadmin** — everything admin has, plus Transactions/revenue figures (section 8) and full CRUD on contestants, events, and tickets (section 18) - editing/deleting the underlying records, not just managing their day-to-day state.
 
 ## 7. Ticket check-in flow
 
@@ -392,7 +393,31 @@ ticket sales split too; leave the flag `false` (or unset) for normal full-amount
 This is independent of `PAYSTACK_VOTE_SPLIT_CODE`, which continues to always apply to coin bundle
 purchases regardless of this setting.
 
-## 18. What's scaffolded vs. what to extend
+## 18. Superadmin CRUD: contestants, events, tickets
+
+On top of what regular `admin` already handles (applications, image uploads, placements, status,
+tier toggling, table management), `superadmin` gets full create/edit/delete on the underlying
+records themselves - gated with `requireRole('superadmin')` at the route level, not just hidden
+buttons:
+
+- **Contestants** (`/admin/contestants/new`, `/admin/contestants/:id/edit`) - add a contestant
+  directly without requiring an application, edit their core details (name, edition, number, state,
+  age, occupation, bio, tagline, Instagram), or delete one outright. Deleting cascades to their
+  photos and vote history (FK `CASCADE`) - there's no undo, so the form has a confirm dialog.
+- **Events** (inline "Edit Event" toggle on `/admin/events`) - edit an event's name, venue, date,
+  capacity, description, and active status after creation, or delete it entirely. Deleting an event
+  cascades to its ticket tiers and every ticket sold against it (FK `CASCADE`) - transaction records
+  survive with their `ticketId` set to `null` so revenue history isn't lost. Ticket tiers themselves
+  also get full edit/delete (price, seats, name, availability), not just the existing activate/deactivate.
+- **Tickets** (`/admin/tickets`) - browse every ticket ever sold or issued, edit a ticket's holder
+  name or status directly, or delete one. The standout capability here is **issuing a ticket
+  manually** (`/admin/tickets/new`) - no Paystack involved, no charge (`priceNaira: 0`, logged as a
+  `comp` transaction) - for press, VIP guests, or comps. It generates a real QR code and Cloudinary
+  upload exactly like a paid ticket, finds-or-creates the recipient's account by email (auto-created
+  accounts are pre-verified, skipping the email verification wall since an admin vouched for them
+  directly), and attempts to email it to them the same way a normal purchase does.
+
+## 19. What's scaffolded vs. what to extend
 
 Everything listed in the original spec has working models, routes, and views: home (this year + last
 year), about, contact, gallery, contestant list/detail with multi-photo galleries, live leaderboard,

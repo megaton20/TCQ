@@ -1,0 +1,99 @@
+<section class="max-w-lg mx-auto px-4 py-10">
+  <a href="/admin/tickets" class="text-sm text-carnival-green font-semibold hover:underline">
+    <i class="fa-solid fa-arrow-left mr-1"></i> Back to Tickets
+  </a>
+
+  <h1 class="text-2xl font-bold text-carnival-green mt-4 mb-6">
+    <%= ticket ? 'Edit Ticket' : 'Issue Ticket' %>
+  </h1>
+
+  <% if (!ticket) { %>
+    <p class="text-sm text-gray-500 mb-4">
+      Issues a ticket directly - no payment involved. Use this for comp tickets, press, or VIP guests.
+      A real QR code is generated and the ticket goes straight to <strong>valid</strong>.
+    </p>
+
+    <form action="/admin/tickets" method="POST" class="bg-white rounded-2xl shadow p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Event</label>
+        <select id="event-select" name="eventId" required class="w-full border rounded-lg px-3 py-2">
+          <option value="">Select an event&hellip;</option>
+          <% events.forEach(e => { %>
+            <option value="<%= e.id %>"><%= e.name %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Ticket Tier</label>
+        <select id="tier-select" name="ticketTierId" required class="w-full border rounded-lg px-3 py-2">
+          <option value="">Select an event first&hellip;</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Holder Name</label>
+        <input name="holderName" required class="w-full border rounded-lg px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Email</label>
+        <input type="email" name="email" required class="w-full border rounded-lg px-3 py-2">
+        <p class="text-xs text-gray-400 mt-1">If no account exists for this email, one is created automatically (pre-verified) so the ticket has somewhere to live.</p>
+      </div>
+
+      <button class="w-full bg-carnival-green text-white font-semibold py-3 rounded-full hover:opacity-90">
+        Issue Ticket
+      </button>
+    </form>
+
+    <script>
+      const eventTiers = <%- JSON.stringify(events.map(e => ({ id: e.id, tiers: (e.tiers || []).map(t => ({ id: t.id, name: t.name, priceNaira: t.priceNaira })) }))) %>;
+      const eventSelect = document.getElementById('event-select');
+      const tierSelect = document.getElementById('tier-select');
+
+      eventSelect.addEventListener('change', () => {
+        const match = eventTiers.find(e => e.id === eventSelect.value);
+        tierSelect.innerHTML = '';
+        if (!match || !match.tiers.length) {
+          tierSelect.innerHTML = '<option value="">No active tiers for this event</option>';
+          return;
+        }
+        tierSelect.innerHTML = match.tiers.map(t =>
+          `<option value="${t.id}">${t.name} (₦${Number(t.priceNaira).toLocaleString()})</option>`
+        ).join('');
+      });
+    </script>
+  <% } else { %>
+    <div class="bg-white rounded-2xl shadow p-6 space-y-1 mb-4 text-sm text-gray-600">
+      <p><strong>Event:</strong> <%= ticket.event ? ticket.event.name : '-' %></p>
+      <p><strong>Tier:</strong> <%= ticket.tier ? ticket.tier.name : 'General' %></p>
+      <p><strong>Price:</strong> <%= Number(ticket.priceNaira) === 0 ? 'Comp' : '₦' + Number(ticket.priceNaira).toLocaleString() %></p>
+      <p><strong>Fallback Code:</strong> <span class="font-mono"><%= ticket.fallbackCode %></span></p>
+    </div>
+
+    <form action="/admin/tickets/<%= ticket.id %>" method="POST" class="bg-white rounded-2xl shadow p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Holder Name</label>
+        <input name="holderName" value="<%= ticket.holderName %>" required class="w-full border rounded-lg px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Status</label>
+        <select name="status" class="w-full border rounded-lg px-3 py-2">
+          <option value="pending_payment" <%= ticket.status === 'pending_payment' ? 'selected' : '' %>>Pending Payment</option>
+          <option value="valid" <%= ticket.status === 'valid' ? 'selected' : '' %>>Valid</option>
+          <option value="used" <%= ticket.status === 'used' ? 'selected' : '' %>>Used</option>
+          <option value="cancelled" <%= ticket.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+        </select>
+      </div>
+      <button class="w-full bg-carnival-green text-white font-semibold py-2 rounded-full hover:opacity-90">Save Changes</button>
+    </form>
+
+    <form action="/admin/tickets/<%= ticket.id %>/delete" method="POST" class="mt-4"
+          onsubmit="return confirm('Delete this ticket permanently? This cannot be undone.');">
+      <button class="w-full bg-white border border-red-200 text-red-600 font-semibold py-2 rounded-full hover:bg-red-50">
+        <i class="fa-solid fa-trash mr-1"></i> Delete Ticket
+      </button>
+    </form>
+  <% } %>
+</section>
