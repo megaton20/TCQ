@@ -15,8 +15,8 @@ module.exports = {
     await queryInterface.bulkInsert('users', [
       {
         id: superAdminId,
-        fullName: 'Mega Admin',
-        email: 'admin@carnivalqueen.test',
+        fullName: 'Tcq Admin',
+        email: 'admin@carnivalqueen.com',
         phone: '08000000001',
         password,
         role: 'superadmin',
@@ -28,8 +28,8 @@ module.exports = {
         // Operational admin - door entry records + day-to-day management,
         // no access to Transactions or revenue figures. See adminRoutes.js.
         id: adminId,
-        fullName: 'Door Manager',
-        email: 'manager@carnivalqueen.test',
+        fullName: 'Tcq Manager',
+        email: 'manager@carnivalqueen.com',
         phone: '08000000004',
         password,
         role: 'admin',
@@ -39,8 +39,8 @@ module.exports = {
       },
       {
         id: staffId,
-        fullName: 'Door Staff',
-        email: 'staff@carnivalqueen.test',
+        fullName: 'Tcq Staff',
+        email: 'staff@carnivalqueen.com',
         phone: '08000000002',
         password,
         role: 'staff',
@@ -50,8 +50,8 @@ module.exports = {
       },
       {
         id: voterId,
-        fullName: 'Test Voter',
-        email: 'voter@carnivalqueen.test',
+        fullName: 'Adariku Mike',
+        email: 'adarikumichael@gmail.com',
         phone: '08000000003',
         password,
         role: 'voter',
@@ -66,13 +66,13 @@ module.exports = {
       { id: uuidv4(), userId: superAdminId, coinBalance: 0, createdAt: now, updatedAt: now },
       { id: uuidv4(), userId: adminId, coinBalance: 0, createdAt: now, updatedAt: now },
       { id: uuidv4(), userId: staffId, coinBalance: 0, createdAt: now, updatedAt: now },
-      { id: uuidv4(), userId: voterId, coinBalance: 10000, createdAt: now, updatedAt: now } // pre-loaded for testing votes
+      { id: uuidv4(), userId: voterId, coinBalance: 100000, createdAt: now, updatedAt: now } // pre-loaded for testing votes
     ]);
   },
 
-  async down(queryInterface) {
+   async down(queryInterface) {
     await queryInterface.bulkDelete('users', {
-      email: ['admin@carnivalqueen.test', 'manager@carnivalqueen.test', 'staff@carnivalqueen.test', 'voter@carnivalqueen.test']
+      email: ['admin@carnivalqueen.com', 'manager@carnivalqueen.com', 'staff@carnivalqueen.com', 'adarikumichael@gmail.com']
     });
   }
 };

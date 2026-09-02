@@ -8,10 +8,10 @@ const PLACEHOLDER = '/public/img/placeholder.jpg';
 
 // Fixed IDs so other seeders (e.g. votes, if you add a demo-votes seeder later) can reference them.
 const CONTESTANTS_2025 = [
-  { id: '33333333-0000-0000-0000-000000000001', name: 'Amara Bassey', state: 'Cross River', number: 1, isWinner: true, position: 'Queen',
+  { id: '33333333-0000-0000-0000-000000000001', name: 'Cleopatra Otu', state: 'Cross River', number: 1, isWinner: true, position: 'Queen',
     blogContent: 'Since being crowned, Amara has dedicated her reign to community health outreach across Cross River State, partnering with local clinics to provide free health screenings and school supplies to underserved communities. Her "Health for Her" initiative has reached over 500 women and children so far, and she continues to visit local schools to speak about education and self-confidence.' },
-  { id: '33333333-0000-0000-0000-000000000002', name: 'Ifeoma Chukwu', state: 'Anambra', number: 2, position: '1st Runner-up' },
-  { id: '33333333-0000-0000-0000-000000000003', name: 'Zainab Bello', state: 'Kano', number: 3, position: '2nd Runner-up' }
+  { id: '33333333-0000-0000-0000-000000000002', name: 'Anwuli Oraemeka', state: 'Anambra', number: 2, position: '1st Runner-up' },
+  { id: '33333333-0000-0000-0000-000000000003', name: 'Esther Edet', state: 'Cross River', number: 3, position: '2nd Runner-up' }
 ];
 
 const CONTESTANTS_2026 = [

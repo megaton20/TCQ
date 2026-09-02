@@ -16,14 +16,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// This MUST be the first thing mounted on the app - before view engine
-// setup, sessions, or (critically) express.json()/express.urlencoded()
-// below. Paystack webhook signature verification needs the raw,
-// byte-for-byte request body; once express.json() parses it into an
-// object, that's gone. Keeping this at the very top (not just "before the
-// body parsers" further down) means it can never accidentally end up
-// after them, however this file gets edited later.
-app.use('/webhooks', require('./routes/webhookRoutes'));
+
+app.use('/webhook', require('./routes/webhookRoutes'));
 
 // Trust the first proxy hop (ngrok, or a reverse proxy in production) so
 // req.protocol reflects X-Forwarded-Proto correctly - needed for getBaseUrl()
