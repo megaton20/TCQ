@@ -8,7 +8,7 @@ const { stashReturnTo, popReturnTo } = require('../utils/returnTo');
 const { generateToken, hoursFromNow } = require('../utils/tokens');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/email');
 const { getBaseUrl } = require('../utils/getBaseUrl');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, forwardAuthenticated } = require('../middleware/auth');
 
 function roleDefaultPath(user) {
   if (['admin', 'superadmin'].includes(user.role)) return '/admin';
@@ -17,12 +17,12 @@ function roleDefaultPath(user) {
 }
 
 // --- Registration ---
-router.get('/register', (req, res) => {
+router.get('/register',forwardAuthenticated, (req, res) => {
   if (req.query.next) stashReturnTo(req, req.query.next);
   res.render('auth/register', { title: 'Create Account', next: req.query.next || req.session.returnTo || '' });
 });
 
-router.post('/register', async (req, res, next) => {
+router.post('/register',forwardAuthenticated, async (req, res, next) => {
   try {
     const { fullName, email, phone, password, confirmPassword, next: nextUrl } = req.body;
     if (password !== confirmPassword) {
@@ -63,12 +63,12 @@ router.post('/register', async (req, res, next) => {
 });
 
 // --- Login ---
-router.get('/login', (req, res) => {
+router.get('/login',forwardAuthenticated, (req, res) => {
   if (req.query.next) stashReturnTo(req, req.query.next);
   res.render('auth/login', { title: 'Log In', next: req.query.next || req.session.returnTo || '' });
 });
 
-router.post('/login', async (req, res, next) => {
+router.post('/login', forwardAuthenticated, async (req, res, next) => {
   try {
     const { email, password, next: nextUrl } = req.body;
     const user = await User.findOne({ where: { email } });

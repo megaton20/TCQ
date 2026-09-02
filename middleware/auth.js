@@ -66,4 +66,14 @@ function requireVerifiedEmail(req, res, next) {
   next();
 }
 
-module.exports = { loadUser, requireAuth, requireRole, requireVerifiedEmail };
+function forwardAuthenticated(req, res, next) {
+  if (req.currentUser) {
+
+    stashReturnTo(req, req.originalUrl);
+    req.flash('warning', 'Already logged in...');
+    return res.redirect(`/auth/login?next=${encodeURIComponent(req.originalUrl)}`);
+  }
+  next();
+}
+
+module.exports = { loadUser, requireAuth, requireRole, requireVerifiedEmail, forwardAuthenticated };
