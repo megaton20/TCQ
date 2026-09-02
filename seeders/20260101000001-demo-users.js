@@ -50,13 +50,13 @@ module.exports = {
       },
       {
         id: voterId,
-        fullName: 'Test Voter',
-        email: 'voter@carnivalqueen.com',
+        fullName: 'Adariku Michael',
+        email: 'adarikumichael@gmail.com',
         phone: '08000000003',
         password,
         role: 'voter',
         isActive: true,
-        emailVerifiedAt: now, // seeded demo account - skips the real verification flow
+        emailVerifiedAt: now,
 
         createdAt: now, updatedAt: now
       }
@@ -66,7 +66,7 @@ module.exports = {
       { id: uuidv4(), userId: superAdminId, coinBalance: 0, createdAt: now, updatedAt: now },
       { id: uuidv4(), userId: adminId, coinBalance: 0, createdAt: now, updatedAt: now },
       { id: uuidv4(), userId: staffId, coinBalance: 0, createdAt: now, updatedAt: now },
-      { id: uuidv4(), userId: voterId, coinBalance: 10000, createdAt: now, updatedAt: now } // pre-loaded for testing votes
+      { id: uuidv4(), userId: voterId, coinBalance: 100000, createdAt: now, updatedAt: now } // pre-loaded for testing votes
     ]);
   },
 
