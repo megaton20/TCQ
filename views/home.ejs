@@ -1,0 +1,182 @@
+<section class="bg-gradient-to-b from-carnival-green to-carnival-green/90 text-white">
+  <div class="max-w-6xl mx-auto px-4 py-16 md:py-24 text-center">
+    <p class="uppercase tracking-widest text-carnival-gold text-sm mb-3">
+      <% if (currentEdition) { %><%= currentEdition.title %><% } else { %>Nigeria's Premier Pageant<% } %>
+    </p>
+    <h1 class="text-3xl md:text-5xl font-extrabold mb-4">Crown Her. Your Vote Decides.</h1>
+    <p class="max-w-xl mx-auto text-white/80 mb-8">
+      Vote for your favourite contestant using coins, watch the leaderboard update live, and be part of the crowning moment.
+    </p>
+    <a href="<%= currentUser ? '/contestants' : '/auth/login?next=/contestants' %>"
+       class="inline-block bg-carnival-gold text-carnival-green font-bold px-8 py-3 rounded-full text-lg hover:opacity-90">
+      Start Voting
+    </a>
+  </div>
+</section>
+
+<% if (currentEdition && (currentEdition.theme || currentEdition.themeDescription)) { %>
+<section class="bg-white py-14">
+  <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">
+    <div class="order-2 md:order-1">
+      <p class="uppercase tracking-widest text-carnival-gold text-sm mb-2">This Year's Theme</p>
+      <h2 class="text-2xl md:text-3xl font-bold text-carnival-green mb-4">
+        <%= currentEdition.theme || currentEdition.title %>
+      </h2>
+      <p class="text-gray-600 leading-relaxed">
+        <%= currentEdition.themeDescription || 'Details about this year\'s theme are coming soon.' %>
+      </p>
+    </div>
+    <div class="order-1 md:order-2">
+      <div class="aspect-[4/3] rounded-3xl overflow-hidden bg-gray-200 shadow-lg">
+        <img src="<%= currentEdition.themeImageUrl || '/public/img/placeholder.jpg' %>"
+             alt="<%= currentEdition.theme || 'Theme image' %>" class="w-full h-full object-cover">
+      </div>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<% if (thisYearContestants && thisYearContestants.length) { %>
+<section class="max-w-6xl mx-auto px-4 py-12">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-bold text-carnival-green"><%= currentEdition.title %> Contestants</h2>
+    <a href="/contestants" class="text-sm font-semibold text-carnival-green hover:underline">View all &rarr;</a>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <% thisYearContestants.slice(0, 10).forEach(contestant => { %>
+      <%- include('partials/contestant-card', { contestant }) %>
+    <% }) %>
+  </div>
+</section>
+<% } %>
+
+<% if (lastYearWinner) { %>
+<section class="bg-carnival-gold/10 py-12">
+  <div class="max-w-4xl mx-auto px-4 text-center">
+    <p class="uppercase tracking-widest text-carnival-green text-sm mb-2">
+      <i class="fa-solid fa-crown"></i> <%= lastEdition.year %> Results
+    </p>
+    <h2 class="text-2xl md:text-3xl font-bold mb-8">Meet Last Edition's Top Three</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 items-end max-w-3xl mx-auto">
+      <%
+        const firstRunnerUp = lastYearRunnerUps.find(c => c.winnerPosition === '1st Runner-up');
+        const secondRunnerUp = lastYearRunnerUps.find(c => c.winnerPosition === '2nd Runner-up');
+        function thumbOf(c) {
+          const t = c.images && c.images.find(i => i.isThumbnail);
+          return t ? t.url : (c.images && c.images[0] ? c.images[0].url : '/public/img/placeholder.jpg');
+        }
+      %>
+
+      <!-- 1st Runner-up (left) -->
+      <% if (firstRunnerUp) { %>
+        <div class="bg-white rounded-2xl shadow overflow-hidden order-1">
+          <div class="aspect-square overflow-hidden bg-gray-200">
+            <img src="<%= thumbOf(firstRunnerUp) %>" alt="<%= firstRunnerUp.fullName %>" class="w-full h-full object-cover">
+          </div>
+          <div class="p-3">
+            <p class="text-xs font-bold text-carnival-gold mb-1"><i class="fa-solid fa-medal"></i> 1st Runner-up</p>
+            <p class="font-semibold text-sm text-carnival-green truncate mb-2"><%= firstRunnerUp.fullName %></p>
+            <a href="/contestants/<%= firstRunnerUp.slug %>" class="text-xs font-semibold text-carnival-green hover:underline">View Profile &rarr;</a>
+          </div>
+        </div>
+      <% } else { %><div class="order-1"></div><% } %>
+
+      <!-- Winner (center, elevated) -->
+      <div class="bg-white rounded-2xl shadow-xl overflow-hidden order-2 sm:-translate-y-4 border-2 border-carnival-gold">
+        <div class="aspect-square overflow-hidden bg-gray-200">
+          <img src="<%= thumbOf(lastYearWinner) %>" alt="<%= lastYearWinner.fullName %>" class="w-full h-full object-cover">
+        </div>
+        <div class="p-4">
+          <p class="text-xs font-bold text-carnival-gold mb-1"><i class="fa-solid fa-crown"></i> Queen</p>
+          <p class="font-bold text-carnival-green mb-2"><%= lastYearWinner.fullName %></p>
+          <a href="/contestants/<%= lastYearWinner.slug %>/blog"
+             class="inline-flex items-center gap-1.5 bg-carnival-green text-white text-xs font-semibold px-4 py-2 rounded-full hover:opacity-90">
+            Read More <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- 2nd Runner-up (right) -->
+      <% if (secondRunnerUp) { %>
+        <div class="bg-white rounded-2xl shadow overflow-hidden order-3">
+          <div class="aspect-square overflow-hidden bg-gray-200">
+            <img src="<%= thumbOf(secondRunnerUp) %>" alt="<%= secondRunnerUp.fullName %>" class="w-full h-full object-cover">
+          </div>
+          <div class="p-3">
+            <p class="text-xs font-bold text-carnival-gold mb-1"><i class="fa-solid fa-medal"></i> 2nd Runner-up</p>
+            <p class="font-semibold text-sm text-carnival-green truncate mb-2"><%= secondRunnerUp.fullName %></p>
+            <a href="/contestants/<%= secondRunnerUp.slug %>" class="text-xs font-semibold text-carnival-green hover:underline">View Profile &rarr;</a>
+          </div>
+        </div>
+      <% } else { %><div class="order-3"></div><% } %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<% if (lastYearContestants && lastYearContestants.length) { %>
+<section class="max-w-6xl mx-auto px-4 py-12">
+  <h2 class="text-2xl font-bold text-carnival-green mb-6"><%= lastEdition.year %> Contestants</h2>
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <% lastYearContestants.forEach(contestant => { %>
+      <%- include('partials/contestant-card', { contestant }) %>
+    <% }) %>
+  </div>
+</section>
+<% } %>
+
+<% if (galleryPreview && galleryPreview.length) { %>
+<section class="max-w-6xl mx-auto px-4 py-12">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-bold text-carnival-green">Gallery</h2>
+    <a href="/gallery" class="text-sm font-semibold text-carnival-green hover:underline">View all &rarr;</a>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <% galleryPreview.forEach(img => { %>
+      <a href="/gallery" class="block aspect-square overflow-hidden rounded-xl bg-gray-200 group">
+        <img src="<%= img.url %>" alt="Gallery photo" class="w-full h-full object-cover group-hover:scale-105 transition">
+      </a>
+    <% }) %>
+  </div>
+</section>
+<% } %>
+
+<% if (pastWinners && pastWinners.length) { %>
+<section class="bg-carnival-green/5 py-12">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold text-carnival-green"><i class="fa-solid fa-crown text-carnival-gold mr-2"></i>Past Winners</h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <% pastWinners.forEach(winner => { %>
+        <%
+          const thumb = winner.images && winner.images.find(i => i.isThumbnail);
+          const thumbUrl = thumb ? thumb.url : (winner.images && winner.images[0] ? winner.images[0].url : '/public/img/placeholder.jpg');
+        %>
+        <a href="/contestants/<%= winner.slug %>/blog" class="block bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden group">
+          <div class="aspect-square overflow-hidden bg-gray-200">
+            <img src="<%= thumbUrl %>" alt="<%= winner.fullName %>" class="w-full h-full object-cover group-hover:scale-105 transition">
+          </div>
+          <div class="p-3 text-center">
+            <p class="text-xs font-bold text-carnival-gold mb-0.5"><%= winner.edition.year %></p>
+            <p class="font-semibold text-sm text-carnival-green truncate"><%= winner.fullName %></p>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<section class="max-w-4xl mx-auto px-4 py-16 text-center">
+  <p class="uppercase tracking-widest text-carnival-gold text-sm mb-2">About Us</p>
+  <h2 class="text-2xl md:text-3xl font-bold text-carnival-green mb-4">Celebrating Beauty, Brains & Culture</h2>
+  <p class="text-gray-600 max-w-2xl mx-auto mb-6">
+    The Carnival Queen is a pageantry platform celebrating beauty, intelligence, and culture through
+    a transparent, real-time voting system that puts the outcome directly in the public's hands.
+  </p>
+  <a href="/about" class="inline-flex items-center gap-2 bg-carnival-green text-white font-semibold px-6 py-3 rounded-full hover:opacity-90">
+    Read More <i class="fa-solid fa-arrow-right"></i>
+  </a>
+</section>

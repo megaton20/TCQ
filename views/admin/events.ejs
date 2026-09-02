@@ -1,0 +1,58 @@
+<section class="max-w-4xl mx-auto px-4 py-10">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-carnival-green">Events & Tickets</h1>
+    <a href="/admin/tables" class="text-sm font-semibold text-carnival-green hover:underline">
+      <i class="fa-solid fa-users mr-1"></i> Table Management &rarr;
+    </a>
+  </div>
+
+  <form action="/admin/events" method="POST" class="bg-white rounded-2xl shadow p-5 grid grid-cols-2 gap-3 mb-8">
+    <p class="col-span-2 font-semibold text-sm text-gray-500">Create Event</p>
+    <input name="name" placeholder="Event Name" required class="border rounded-lg px-3 py-2 col-span-2">
+    <input name="venue" placeholder="Venue" required class="border rounded-lg px-3 py-2 col-span-2">
+    <input name="eventDate" type="datetime-local" required class="border rounded-lg px-3 py-2">
+    <input name="capacity" type="number" placeholder="Capacity (optional)" class="border rounded-lg px-3 py-2">
+    <textarea name="description" placeholder="Description" class="border rounded-lg px-3 py-2 col-span-2"></textarea>
+    <button class="col-span-2 bg-carnival-green text-white font-semibold py-2 rounded-full">Create Event</button>
+  </form>
+
+  <div class="space-y-6">
+    <% events.forEach(e => { %>
+      <div class="bg-white rounded-2xl shadow p-5">
+        <p class="font-bold text-lg"><%= e.name %></p>
+        <p class="text-sm text-gray-500 mb-3"><%= e.venue %> &middot; <%= new Date(e.eventDate).toLocaleString() %> &middot; <%= e.ticketsSold %> sold<% if (e.capacity) { %> / <%= e.capacity %><% } %></p>
+
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Ticket Tiers</p>
+        <div class="space-y-2 mb-4">
+          <% e.tiers.forEach(tier => { %>
+            <div class="flex items-center justify-between bg-gray-50 rounded-xl p-3 text-sm">
+              <div>
+                <p class="font-semibold">
+                  <%= tier.name %>
+                  <% if (tier.tierType === 'table') { %><span class="text-xs bg-carnival-gold text-carnival-green px-2 py-0.5 rounded-full ml-1"><%= tier.seatsIncluded %> seats</span><% } %>
+                </p>
+                <p class="text-gray-500">₦<%= Number(tier.priceNaira).toLocaleString() %> &middot; <%= tier.quantitySold %> sold<% if (tier.quantityAvailable) { %> / <%= tier.quantityAvailable %><% } %></p>
+              </div>
+              <form action="/admin/tiers/<%= tier.id %>/toggle" method="POST">
+                <button class="text-xs font-semibold <%= tier.isActive ? 'text-red-600' : 'text-green-600' %>"><%= tier.isActive ? 'Deactivate' : 'Activate' %></button>
+              </form>
+            </div>
+          <% }) %>
+          <% if (!e.tiers.length) { %><p class="text-xs text-gray-400">No tiers yet - add Regular, VIP, or Table tiers below.</p><% } %>
+        </div>
+
+        <form action="/admin/events/<%= e.id %>/tiers" method="POST" class="grid grid-cols-2 gap-2 text-sm border-t pt-3">
+          <input name="name" placeholder="Tier name (e.g. VIP)" required class="border rounded-lg px-2 py-1.5 col-span-2">
+          <select name="tierType" class="border rounded-lg px-2 py-1.5">
+            <option value="single">Single seat (Regular/VIP)</option>
+            <option value="table">Table (group)</option>
+          </select>
+          <input name="seatsIncluded" type="number" placeholder="Seats (if table)" class="border rounded-lg px-2 py-1.5">
+          <input name="priceNaira" type="number" placeholder="Price (₦)" required class="border rounded-lg px-2 py-1.5">
+          <input name="quantityAvailable" type="number" placeholder="Max available (optional)" class="border rounded-lg px-2 py-1.5">
+          <button class="col-span-2 bg-carnival-gold text-carnival-green font-semibold py-1.5 rounded-full">Add Tier</button>
+        </form>
+      </div>
+    <% }) %>
+  </div>
+</section>

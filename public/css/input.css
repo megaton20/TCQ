@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Small custom touches beyond Tailwind utility classes */
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 4px; }

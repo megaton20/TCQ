@@ -1,0 +1,58 @@
+<%- include('_nav', { active: 'settings' }) %>
+
+<section class="max-w-2xl mx-auto px-4 py-6">
+  <h1 class="text-lg font-bold text-carnival-green mb-4">Settings</h1>
+
+  <!-- Account info, mobile-settings-list style -->
+  <div class="bg-white rounded-2xl shadow p-5 mb-4">
+    <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Account</p>
+    <form action="/dashboard/settings" method="POST" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Full Name</label>
+        <input name="fullName" value="<%= currentUser.fullName %>" required class="w-full border rounded-lg px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Email</label>
+        <input value="<%= currentUser.email %>" disabled class="w-full border rounded-lg px-3 py-2 bg-gray-100">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Phone</label>
+        <input name="phone" value="<%= currentUser.phone || '' %>" class="w-full border rounded-lg px-3 py-2">
+      </div>
+      <hr>
+      <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Change Password</p>
+      <div>
+        <label class="block text-sm font-medium mb-1">Current Password</label>
+        <input type="password" name="currentPassword" class="w-full border rounded-lg px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">New Password</label>
+        <input type="password" name="newPassword" minlength="6" class="w-full border rounded-lg px-3 py-2">
+      </div>
+      <button class="w-full bg-carnival-green text-white font-semibold py-2 rounded-full hover:opacity-90">Save Changes</button>
+    </form>
+  </div>
+
+  <!-- App links, mobile-settings-list style rows -->
+  <div class="bg-white rounded-2xl shadow divide-y mb-4">
+    <a href="/about" class="flex items-center justify-between p-4 hover:bg-gray-50">
+      <span class="flex items-center gap-3 text-sm font-medium"><i class="fa-solid fa-circle-info w-5 text-carnival-green"></i> About The Carnival Queen</span>
+      <i class="fa-solid fa-chevron-right text-gray-300"></i>
+    </a>
+    <a href="/contact" class="flex items-center justify-between p-4 hover:bg-gray-50">
+      <span class="flex items-center gap-3 text-sm font-medium"><i class="fa-solid fa-headset w-5 text-carnival-green"></i> Contact Support</span>
+      <i class="fa-solid fa-chevron-right text-gray-300"></i>
+    </a>
+    <a href="/apply" class="flex items-center justify-between p-4 hover:bg-gray-50">
+      <span class="flex items-center gap-3 text-sm font-medium"><i class="fa-solid fa-crown w-5 text-carnival-green"></i> Become a Contestant</span>
+      <i class="fa-solid fa-chevron-right text-gray-300"></i>
+    </a>
+  </div>
+
+  <!-- Logout -->
+  <form action="/auth/logout" method="POST" onsubmit="return confirm('Log out of your account?');">
+    <button class="w-full flex items-center justify-center gap-2 bg-white shadow rounded-2xl p-4 text-red-600 font-semibold hover:bg-red-50">
+      <i class="fa-solid fa-right-from-bracket"></i> Log Out
+    </button>
+  </form>
+</section>

@@ -1,0 +1,112 @@
+<%
+  const d = new Date(ticket.event.eventDate);
+  const dateStr = d.toLocaleDateString('en-GB');
+  const timeStr = d.toLocaleTimeString('en-GB', { hour12: false });
+  const isTable = ticket.tier && ticket.tier.tierType === 'table';
+  const checkedInCount = isTable ? ticket.members.filter(m => m.checkedInAt).length : 0;
+%>
+<section class="max-w-sm mx-auto px-4 py-10">
+
+  <div class="rounded-3xl shadow-2xl overflow-hidden bg-white">
+
+    <div class="relative text-white text-center px-6 pt-7 pb-8"
+         style="background: linear-gradient(135deg, #0B5D33 0%, #073D21 100%);">
+      <div class="absolute inset-0 opacity-10"
+           style="background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 1px, transparent 12px);"></div>
+      <div class="relative">
+        <i class="fa-solid fa-crown text-carnival-gold text-2xl mb-2"></i>
+        <p class="uppercase tracking-[0.25em] text-xs text-carnival-gold font-semibold mb-2">
+          <%= ticket.tier ? ticket.tier.name : 'Admit One' %>
+        </p>
+        <h1 class="text-xl font-extrabold leading-snug"><%= ticket.event.name %></h1>
+      </div>
+    </div>
+
+    <div class="bg-white px-6 py-5 space-y-3 text-sm text-gray-700 border-b border-dashed border-gray-200">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-location-dot text-carnival-green w-4 text-center"></i>
+        <span><%= ticket.event.venue %></span>
+      </div>
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-calendar-days text-carnival-green w-4 text-center"></i>
+        <span><%= dateStr %>, <%= timeStr %></span>
+      </div>
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-tag text-carnival-green w-4 text-center"></i>
+        <span class="font-bold text-carnival-green">₦<%= Number(ticket.priceNaira).toLocaleString() %></span>
+      </div>
+      <% if (isTable) { %>
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-users text-carnival-green w-4 text-center"></i>
+          <span><%= checkedInCount %> / <%= ticket.tier.seatsIncluded %> seats checked in</span>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="relative bg-white">
+      <div class="absolute -left-3 top-0 -translate-y-1/2 w-6 h-6 bg-carnival-cream rounded-full"></div>
+      <div class="absolute -right-3 top-0 -translate-y-1/2 w-6 h-6 bg-carnival-cream rounded-full"></div>
+      <div class="border-t-2 border-dashed border-gray-300 mx-3"></div>
+    </div>
+
+    <div class="bg-white px-6 pt-6 pb-7 text-center">
+      <% if (ticket.status === 'used') { %>
+        <div class="w-44 h-44 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+          <i class="fa-solid fa-circle-check text-green-600 text-6xl"></i>
+        </div>
+        <p class="text-sm font-semibold text-green-700 mb-1">
+          <%= isTable ? 'Fully checked in' : 'Checked in' %><% if (ticket.checkedInAt) { %> at <%= new Date(ticket.checkedInAt).toLocaleTimeString() %><% } %>
+        </p>
+        <p class="text-xs text-gray-400 mb-4">Fallback code: <span class="font-mono tracking-widest"><%= ticket.fallbackCode %></span></p>
+      <% } else if (ticket.status === 'valid') { %>
+        <div class="inline-block p-3 border-2 border-carnival-gold rounded-2xl mb-4">
+          <img src="<%= ticket.qrImageCloudinaryUrl || ticket.qrImageUrl %>" alt="QR Code" class="w-44 h-44">
+        </div>
+        <p class="text-xs text-gray-400 mb-1">Can't scan? Give this code at the door</p>
+        <p class="text-2xl font-mono font-extrabold tracking-[0.3em] text-carnival-green mb-4"><%= ticket.fallbackCode %></p>
+        <% if (ticket.ticketEmailSentAt) { %>
+          <p class="text-xs text-green-600 mb-4"><i class="fa-solid fa-envelope-circle-check mr-1"></i>Emailed to you on <%= new Date(ticket.ticketEmailSentAt).toLocaleDateString() %></p>
+        <% } else { %>
+          <p class="text-xs text-yellow-600 mb-4"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Email service is currently unavailable, so we couldn't email this ticket - but it's all right here whenever you need it.</p>
+        <% } %>
+      <% } else { %>
+        <div class="w-44 h-44 mx-auto mb-4 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400">
+          <i class="fa-solid fa-hourglass-half text-3xl"></i>
+        </div>
+        <p class="text-sm text-gray-500 mb-4">Your QR code will appear here once payment is confirmed.</p>
+      <% } %>
+
+      <p class="font-semibold text-gray-800"><%= ticket.holderName %><% if (isTable) { %> <span class="text-xs text-gray-400">(Table Owner)</span><% } %></p>
+      <span class="inline-block mt-2 text-[11px] uppercase tracking-wide font-bold px-3 py-1 rounded-full
+                   <%= ticket.status === 'valid' ? 'bg-green-100 text-green-700' : (ticket.status === 'used' ? 'bg-gray-100 text-gray-500' : 'bg-yellow-100 text-yellow-700') %>">
+        <%= ticket.status.replace('_', ' ') %>
+      </span>
+    </div>
+  </div>
+
+  <% if (isTable) { %>
+    <div class="bg-white rounded-2xl shadow p-5 mt-4">
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-sm font-bold text-gray-500 uppercase tracking-wide">Table Guests</p>
+        <a href="/tickets/my/<%= ticket.id %>/manage" class="text-xs font-semibold text-carnival-green hover:underline">Manage &rarr;</a>
+      </div>
+      <div class="divide-y">
+        <% ticket.members.forEach(m => { %>
+          <div class="py-2 flex items-center justify-between text-sm">
+            <span><%= m.fullName %><% if (m.isOwner) { %> <span class="text-xs text-carnival-gold">(You)</span><% } %></span>
+            <% if (m.checkedInAt) { %>
+              <span class="text-xs text-green-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Checked in</span>
+            <% } else { %>
+              <span class="text-xs text-gray-400">Not yet arrived</span>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+      <% if (ticket.members.length < ticket.tier.seatsIncluded) { %>
+        <p class="text-xs text-gray-400 mt-3"><%= ticket.tier.seatsIncluded - ticket.members.length %> seat(s) still unnamed - add your guests before the event.</p>
+      <% } %>
+    </div>
+  <% } %>
+
+  <p class="text-center text-xs text-gray-400 mt-4">Ticket ID: <%= ticket.id.slice(0, 8).toUpperCase() %></p>
+</section>

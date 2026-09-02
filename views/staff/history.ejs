@@ -1,0 +1,30 @@
+<section class="max-w-2xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-carnival-green">My Scan History</h1>
+    <a href="/staff/checkin" class="text-xs font-semibold text-carnival-green hover:underline">
+      <i class="fa-solid fa-qrcode mr-1"></i>Back to Scanner
+    </a>
+  </div>
+
+  <p class="text-sm text-gray-500 mb-4"><%= entries.length %> total check-in<%= entries.length === 1 ? '' : 's' %></p>
+
+  <div class="bg-white rounded-2xl shadow divide-y">
+    <% entries.forEach(e => { %>
+      <div class="p-4">
+        <div class="flex items-center justify-between mb-1">
+          <p class="font-semibold"><%= e.guestName %></p>
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full
+            <%= e.method === 'walk-in' ? 'bg-yellow-100 text-yellow-700'
+                : (e.method === 'table-roster' ? 'bg-carnival-gold/20 text-carnival-green' : 'bg-green-100 text-green-700') %>">
+            <%= e.method.replace('_', ' ') %>
+          </span>
+        </div>
+        <p class="text-sm text-gray-500"><%= e.eventName %> &middot; <%= e.tierName %></p>
+        <p class="text-xs text-gray-400 mt-1"><%= new Date(e.checkedInAt).toLocaleString() %></p>
+      </div>
+    <% }) %>
+    <% if (!entries.length) { %>
+      <p class="p-6 text-sm text-gray-400 text-center">No scans yet.</p>
+    <% } %>
+  </div>
+</section>

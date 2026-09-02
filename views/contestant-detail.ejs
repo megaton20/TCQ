@@ -1,0 +1,124 @@
+<%
+  const thumb = contestant.images.find(i => i.isThumbnail) || contestant.images[0];
+  const otherPhotos = contestant.images.filter(i => !thumb || i.id !== thumb.id);
+  const editionIsCurrent = contestant.edition && contestant.edition.isCurrent;
+%>
+<section class="max-w-5xl mx-auto px-4 py-10">
+  <div class="grid md:grid-cols-2 gap-8">
+    <div>
+      <div class="aspect-[3/4] rounded-2xl overflow-hidden bg-gray-200 mb-3">
+        <img id="main-photo" src="<%= thumb ? thumb.url : '/public/img/placeholder.jpg' %>"
+             alt="<%= contestant.fullName %>" class="w-full h-full object-cover">
+      </div>
+
+      <% if (otherPhotos.length) { %>
+        <p class="text-sm font-semibold text-gray-500 mb-2">More photos</p>
+        <div class="grid grid-cols-4 gap-2">
+          <% if (thumb) { %>
+            <button class="thumb-btn aspect-square rounded-lg overflow-hidden border-2 border-carnival-gold" data-src="<%= thumb.url %>">
+              <img src="<%= thumb.url %>" class="w-full h-full object-cover">
+            </button>
+          <% } %>
+          <% otherPhotos.forEach(img => { %>
+            <button class="thumb-btn aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-carnival-gold" data-src="<%= img.url %>">
+              <img src="<%= img.url %>" class="w-full h-full object-cover" alt="<%= img.caption || contestant.fullName %>">
+            </button>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+
+    <div>
+      <p class="uppercase tracking-widest text-carnival-gold text-sm mb-1">
+        <% if (contestant.contestantNumber) { %>Contestant #<%= contestant.contestantNumber %><% } %>
+      </p>
+      <h1 class="text-3xl font-bold text-carnival-green mb-2"><%= contestant.fullName %></h1>
+      <p class="text-gray-500 mb-4">
+        <%= contestant.stateOfOrigin || '' %><% if (contestant.age) { %> &middot; Age <%= contestant.age %><% } %>
+      </p>
+      <p class="text-gray-700 mb-6"><%= contestant.bio || 'Bio coming soon.' %></p>
+
+      <div class="bg-carnival-gold/10 rounded-2xl p-5 mb-6">
+        <p class="text-sm text-gray-600">Current Votes</p>
+        <p id="vote-count" class="text-4xl font-extrabold text-carnival-green" data-vote-count="<%= contestant.id %>" data-vote-suffix="">
+          <%= Number(contestant.voteCount).toLocaleString() %>
+        </p>
+      </div>
+
+      <% if (editionIsCurrent && currentUser) { %>
+        <form action="/vote/<%= contestant.id %>" method="POST" class="space-y-4" id="vote-form">
+          <input type="hidden" name="returnTo" value="/contestants/<%= contestant.slug %>">
+          <div>
+            <p class="text-sm font-semibold mb-2">Quick Vote</p>
+            <div class="flex gap-2 flex-wrap">
+              <% [10, 25, 50, 100, 250].forEach(qty => { %>
+                <button type="submit" name="voteCount" value="<%= qty %>" onclick="document.getElementById('method-input').value='quick'"
+                        class="px-4 py-2 rounded-full border border-carnival-green text-carnival-green font-semibold hover:bg-carnival-green hover:text-white">
+                  <%= qty %> votes
+                </button>
+              <% }) %>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-sm font-semibold mb-2">Or Enter Manually</p>
+            <div class="flex items-center gap-3">
+              <button type="button" id="decrement" class="w-10 h-10 rounded-full bg-gray-200 font-bold">-</button>
+              <input type="number" name="voteCount" id="manual-vote-count" min="1" value="1"
+                     class="w-24 text-center border rounded-lg px-2 py-2">
+              <button type="button" id="increment" class="w-10 h-10 rounded-full bg-gray-200 font-bold">+</button>
+              <input type="hidden" name="method" id="method-input" value="manual">
+              <button type="submit" class="ml-auto bg-carnival-green text-white font-semibold px-6 py-2 rounded-full hover:opacity-90">
+                Vote Now
+              </button>
+            </div>
+            <p class="text-sm text-gray-500 mt-2">Cost: <span id="coin-cost">1</span> coin (1 coin = ₦200)</p>
+          </div>
+        </form>
+      <% } else if (editionIsCurrent && !currentUser) { %>
+        <a href="/auth/login?next=/contestants/<%= contestant.slug %>"
+           class="block text-center bg-carnival-green text-white font-semibold px-6 py-3 rounded-full hover:opacity-90">
+          Log In to Vote
+        </a>
+      <% } else if (contestant.isWinner) { %>
+        <div class="bg-carnival-gold/10 rounded-2xl p-5">
+          <p class="text-sm text-gray-600 mb-3">
+            <i class="fa-solid fa-crown text-carnival-gold"></i>
+            Voting has closed for this edition. See what <%= contestant.fullName.split(' ')[0] %> has been up to since winning the crown.
+          </p>
+          <a href="/contestants/<%= contestant.slug %>/blog"
+             class="inline-flex items-center gap-2 bg-carnival-green text-white font-semibold px-6 py-3 rounded-full hover:opacity-90">
+            Read More <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+      <% } else { %>
+        <div class="bg-gray-100 rounded-2xl p-5 text-sm text-gray-600">
+          <i class="fa-solid fa-lock mr-1"></i> Voting has closed for this edition.
+        </div>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Live vote count for this contestant is handled globally by main.js
+  // (via the data-vote-count attribute above) - no page-specific socket
+  // code needed here anymore.
+
+  // Photo gallery swapping
+  document.querySelectorAll('.thumb-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('main-photo').src = btn.dataset.src;
+      document.querySelectorAll('.thumb-btn').forEach(b => b.classList.remove('border-carnival-gold'));
+      btn.classList.add('border-carnival-gold');
+    });
+  });
+
+  // Manual stepper + live coin cost
+  const input = document.getElementById('manual-vote-count');
+  const costEl = document.getElementById('coin-cost');
+  function updateCost() { costEl.textContent = parseInt(input.value || 0, 10).toLocaleString(); }
+  document.getElementById('increment').addEventListener('click', () => { input.value = parseInt(input.value || 0) + 1; updateCost(); });
+  document.getElementById('decrement').addEventListener('click', () => { input.value = Math.max(1, parseInt(input.value || 0) - 1); updateCost(); });
+  input.addEventListener('input', updateCost);
+</script>

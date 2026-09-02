@@ -1,0 +1,21 @@
+<%- include('_nav', { active: 'tickets' }) %>
+
+<section class="max-w-4xl mx-auto px-4 py-6">
+  <h1 class="text-lg font-bold text-carnival-green mb-4">My Tickets</h1>
+  <div class="grid sm:grid-cols-2 gap-4">
+    <% tickets.forEach(t => { %>
+      <a href="/tickets/my/<%= t.id %>" class="bg-white rounded-2xl shadow p-5 block hover:shadow-lg">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-9 h-9 rounded-full bg-carnival-green/10 text-carnival-green flex items-center justify-center">
+            <i class="fa-solid fa-ticket"></i>
+          </span>
+          <p class="font-bold text-carnival-green"><%= t.event.name %></p>
+        </div>
+        <% if (t.tier) { %><p class="text-xs text-carnival-gold font-semibold mb-1"><%= t.tier.name %></p><% } %>
+        <p class="text-sm text-gray-500"><%= new Date(t.event.eventDate).toLocaleString() %></p>
+        <p class="text-xs mt-2 capitalize font-semibold <%= t.status === 'valid' ? 'text-green-600' : (t.status === 'used' ? 'text-gray-500' : 'text-yellow-600') %>"><%= t.status.replace('_',' ') %></p>
+      </a>
+    <% }) %>
+    <% if (!tickets.length) { %><p class="text-sm text-gray-500">No tickets yet. <a href="/tickets" class="text-carnival-green font-semibold hover:underline">Browse events</a></p><% } %>
+  </div>
+</section>

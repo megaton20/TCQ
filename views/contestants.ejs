@@ -1,0 +1,16 @@
+<section class="max-w-6xl mx-auto px-4 py-12">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold text-carnival-green">
+      <%= currentEdition ? currentEdition.title : 'Contestants' %>
+    </h1>
+    <a href="/leaderboard" class="text-sm font-semibold text-carnival-green hover:underline">Live Leaderboard &rarr;</a>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <% contestants.forEach(contestant => { %>
+      <%- include('partials/contestant-card', { contestant }) %>
+    <% }) %>
+    <% if (!contestants.length) { %>
+      <p class="col-span-full text-gray-500">No contestants yet for this edition.</p>
+    <% } %>
+  </div>
+</section>

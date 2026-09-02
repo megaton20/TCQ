@@ -1,0 +1,18 @@
+<%
+  const thumb = contestant.images && contestant.images.find(i => i.isThumbnail);
+  const thumbUrl = thumb ? thumb.url : (contestant.images && contestant.images[0] ? contestant.images[0].url : '/public/img/placeholder.jpg');
+%>
+<a href="/contestants/<%= contestant.slug %>" class="block bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden group">
+  <div class="aspect-[3/4] overflow-hidden bg-gray-200">
+    <img src="<%= thumbUrl %>" alt="<%= contestant.fullName %>" class="w-full h-full object-cover group-hover:scale-105 transition">
+  </div>
+  <div class="p-3">
+    <p class="font-semibold text-carnival-green truncate">
+      <% if (contestant.contestantNumber) { %>#<%= contestant.contestantNumber %> &middot; <% } %><%= contestant.fullName %>
+    </p>
+    <% if (contestant.stateOfOrigin) { %><p class="text-xs text-gray-500"><%= contestant.stateOfOrigin %></p><% } %>
+    <p class="text-sm mt-1 font-bold text-carnival-gold" data-vote-count="<%= contestant.id %>" data-vote-suffix=" votes">
+      <%= Number(contestant.voteCount || 0).toLocaleString() %> votes
+    </p>
+  </div>
+</a>

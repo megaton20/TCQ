@@ -1,0 +1,92 @@
+<%
+  const isCredit = transaction.type === 'bundle_purchase';
+  const icon = transaction.type === 'bundle_purchase' ? 'fa-coins' : (transaction.type === 'vote_spend' ? 'fa-check-to-slot' : 'fa-ticket');
+  const statusColor = transaction.status === 'success' ? 'bg-green-100 text-green-700'
+    : (transaction.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700');
+%>
+<section class="max-w-md mx-auto px-4 py-8">
+  <a href="/dashboard/wallet" class="text-sm text-carnival-green font-semibold hover:underline">
+    <i class="fa-solid fa-arrow-left mr-1"></i> Back to Wallet
+  </a>
+
+  <div class="bg-white rounded-3xl shadow-xl overflow-hidden mt-4">
+    <div class="text-center px-6 pt-8 pb-6" style="background: linear-gradient(135deg, #0B5D33 0%, #073D21 100%);">
+      <span class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-white/10 text-white text-2xl mb-3">
+        <i class="fa-solid <%= icon %>"></i>
+      </span>
+      <p class="text-white/70 text-xs uppercase tracking-widest mb-1 capitalize"><%= transaction.type.replace('_', ' ') %></p>
+      <% if (transaction.amountNaira) { %>
+        <p class="text-3xl font-extrabold text-white"><%= isCredit ? '+' : '' %>₦<%= Number(transaction.amountNaira).toLocaleString() %></p>
+      <% } else if (transaction.coinAmount) { %>
+        <p class="text-3xl font-extrabold text-white">&minus;<%= Number(transaction.coinAmount).toLocaleString() %> coins</p>
+      <% } %>
+      <span class="inline-block mt-3 text-[11px] uppercase tracking-wide font-bold px-3 py-1 rounded-full <%= statusColor %>">
+        <%= transaction.status %>
+      </span>
+    </div>
+
+    <div class="px-6 py-5 space-y-3 text-sm">
+      <div class="flex justify-between">
+        <span class="text-gray-500">Date &amp; Time</span>
+        <span class="font-semibold text-right"><%= new Date(transaction.createdAt).toLocaleString() %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Reference</span>
+        <span class="font-mono text-xs text-gray-700 text-right break-all">
+          <%= transaction.paystackReference || transaction.id.slice(0, 8).toUpperCase() %>
+        </span>
+      </div>
+
+      <% if (transaction.type === 'bundle_purchase' && transaction.bundle) { %>
+        <hr>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Bundle</span>
+          <span class="font-semibold"><%= transaction.bundle.name %></span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Coins Credited</span>
+          <span class="font-semibold text-green-600">+<%= Number(transaction.coinAmount).toLocaleString() %></span>
+        </div>
+      <% } %>
+
+      <% if (transaction.type === 'vote_spend' && transaction.vote) { %>
+        <hr>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Voted For</span>
+          <a href="/contestants/<%= transaction.vote.contestant.slug %>" class="font-semibold text-carnival-green hover:underline">
+            <%= transaction.vote.contestant.fullName %>
+          </a>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Votes Cast</span>
+          <span class="font-semibold"><%= transaction.vote.voteCount %></span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Method</span>
+          <span class="font-semibold capitalize"><%= transaction.vote.method %></span>
+        </div>
+      <% } %>
+
+      <% if (transaction.type === 'ticket_purchase' && transaction.ticket) { %>
+        <hr>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Event</span>
+          <span class="font-semibold text-right"><%= transaction.ticket.event.name %></span>
+        </div>
+        <% if (transaction.ticket.tier) { %>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Ticket Tier</span>
+            <span class="font-semibold"><%= transaction.ticket.tier.name %></span>
+          </div>
+        <% } %>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Ticket Status</span>
+          <span class="font-semibold capitalize"><%= transaction.ticket.status.replace('_', ' ') %></span>
+        </div>
+        <a href="/tickets/my/<%= transaction.ticket.id %>" class="block text-center bg-carnival-green text-white text-sm font-semibold py-2 rounded-full mt-2 hover:opacity-90">
+          View Ticket
+        </a>
+      <% } %>
+    </div>
+  </div>
+</section>

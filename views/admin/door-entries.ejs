@@ -1,0 +1,40 @@
+<section class="max-w-5xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-carnival-green mb-2">Door Entry Records</h1>
+  <p class="text-sm text-gray-500 mb-6">Every check-in, who scanned it, and how - single tickets and table guests together.</p>
+
+  <div class="bg-white rounded-2xl shadow overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-left">
+        <tr>
+          <th class="p-3">Guest</th>
+          <th class="p-3">Event</th>
+          <th class="p-3">Tier</th>
+          <th class="p-3">Method</th>
+          <th class="p-3">Checked In By</th>
+          <th class="p-3">Time</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y">
+        <% entries.forEach(e => { %>
+          <tr>
+            <td class="p-3 font-semibold"><%= e.guestName %></td>
+            <td class="p-3"><%= e.eventName %></td>
+            <td class="p-3"><%= e.tierName %></td>
+            <td class="p-3">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full
+                <%= e.method === 'walk-in' ? 'bg-yellow-100 text-yellow-700'
+                    : (e.method === 'table-roster' ? 'bg-carnival-gold/20 text-carnival-green' : 'bg-green-100 text-green-700') %>">
+                <%= e.method.replace('_', ' ') %>
+              </span>
+            </td>
+            <td class="p-3"><i class="fa-solid fa-user-shield text-gray-400 mr-1"></i><%= e.staffName %></td>
+            <td class="p-3 text-gray-500"><%= new Date(e.checkedInAt).toLocaleString() %></td>
+          </tr>
+        <% }) %>
+        <% if (!entries.length) { %>
+          <tr><td colspan="6" class="p-6 text-center text-gray-400">No check-ins recorded yet.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</section>

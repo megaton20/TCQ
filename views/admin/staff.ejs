@@ -1,0 +1,18 @@
+<section class="max-w-2xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-carnival-green mb-2">Check-in Staff</h1>
+  <p class="text-sm text-gray-500 mb-6">Create staff accounts via Sign Up, then promote them here by setting role in DB, or extend this page with a create-staff form.</p>
+  <div class="space-y-3">
+    <% staff.forEach(s => { %>
+      <div class="bg-white rounded-2xl shadow p-4 flex justify-between items-center">
+        <div>
+          <p class="font-bold"><%= s.fullName %></p>
+          <p class="text-sm text-gray-500"><%= s.email %></p>
+        </div>
+        <form action="/admin/staff/<%= s.id %>/toggle" method="POST">
+          <button class="text-sm font-semibold <%= s.isActive ? 'text-red-600' : 'text-green-600' %>"><%= s.isActive ? 'Deactivate' : 'Activate' %></button>
+        </form>
+      </div>
+    <% }) %>
+    <% if (!staff.length) { %><p class="text-gray-500">No staff accounts yet.</p><% } %>
+  </div>
+</section>

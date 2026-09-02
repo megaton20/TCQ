@@ -1,0 +1,31 @@
+<section class="max-w-4xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-carnival-green mb-6">Pending Applications</h1>
+  <div class="space-y-4">
+    <% applications.forEach(a => { %>
+      <div class="bg-white rounded-2xl shadow p-5">
+        <div class="flex justify-between items-start mb-2">
+          <div>
+            <p class="font-bold"><%= a.fullName %></p>
+            <p class="text-sm text-gray-500"><%= a.applicant.email %> &middot; <%= a.phone %></p>
+            <p class="text-sm text-gray-500"><%= a.stateOfOrigin %> &middot; DOB <%= a.dateOfBirth %></p>
+          </div>
+          <div class="flex gap-2 text-xs">
+            <% if (a.passportPhotoUrl) { %><a href="<%= a.passportPhotoUrl %>" target="_blank" class="underline text-carnival-green">Passport photo</a><% } %>
+            <% if (a.idDocumentUrl) { %><a href="<%= a.idDocumentUrl %>" target="_blank" class="underline text-carnival-green">ID</a><% } %>
+          </div>
+        </div>
+        <p class="text-sm text-gray-600 mb-3"><%= a.whyJoin %></p>
+        <div class="flex gap-3">
+          <form action="/admin/applications/<%= a.id %>/approve" method="POST">
+            <button class="bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-full">Approve</button>
+          </form>
+          <form action="/admin/applications/<%= a.id %>/reject" method="POST" class="flex gap-2">
+            <input name="reason" placeholder="Reason (optional)" class="border rounded-lg px-2 py-1 text-sm">
+            <button class="bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-full">Reject</button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+    <% if (!applications.length) { %><p class="text-gray-500">No pending applications.</p><% } %>
+  </div>
+</section>

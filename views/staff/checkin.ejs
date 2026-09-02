@@ -1,0 +1,182 @@
+<section class="max-w-md mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-2">
+    <h1 class="text-2xl font-bold text-carnival-green">Ticket Check-in</h1>
+    <div class="flex gap-3 text-xs font-semibold">
+      <a href="/staff/dashboard" class="text-carnival-green hover:underline"><i class="fa-solid fa-gauge mr-1"></i>Dashboard</a>
+      <a href="/staff/history" class="text-carnival-green hover:underline"><i class="fa-solid fa-clock-rotate-left mr-1"></i>My Scans</a>
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <label class="block text-sm font-medium mb-1">Event</label>
+    <select id="event-select" class="w-full border rounded-lg px-3 py-2">
+      <% events.forEach(e => { %>
+        <option value="<%= e.id %>"><%= e.name %></option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div id="qr-reader" class="rounded-2xl overflow-hidden mb-1"></div>
+  <p id="scan-status" class="text-xs text-center text-gray-400 mb-4">Point the camera at the ticket's QR code...</p>
+
+  <div class="bg-white rounded-2xl shadow p-4 mb-4">
+    <label class="block text-sm font-medium mb-2">Or type the fallback code</label>
+    <div class="flex gap-2">
+      <input id="fallback-input" placeholder="CQ-XXXXXXXX" class="flex-1 border rounded-lg px-3 py-2 uppercase tracking-widest">
+      <button id="fallback-submit" class="bg-carnival-green text-white font-semibold px-4 rounded-lg">Check</button>
+    </div>
+  </div>
+
+  <div id="result" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-sm rounded-2xl p-4 text-center font-semibold shadow-xl"></div>
+
+  <div id="table-panel" class="bg-white rounded-2xl shadow p-4 hidden">
+    <p class="text-sm font-bold text-carnival-green mb-1">Table Roster</p>
+    <p class="text-xs text-gray-500 mb-3">Confirm the guest's name/ID matches one on this list before tapping it in.</p>
+    <div id="table-members" class="divide-y mb-4"></div>
+
+    <div class="border-t pt-3">
+      <p class="text-xs font-semibold text-gray-500 mb-2">Not on the list? Add a walk-up guest (only if seats remain):</p>
+      <div class="flex gap-2">
+        <input id="walkin-name" placeholder="Full name" class="flex-1 border rounded-lg px-3 py-2 text-sm">
+        <button id="walkin-submit" class="bg-carnival-gold text-carnival-green font-semibold px-3 rounded-lg text-sm">Add & Admit</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script>
+  const socket = window.appSocket;
+  let currentEventId = document.getElementById('event-select').value;
+  let currentTicketId = null;
+  socket.emit('join:checkin', currentEventId);
+  document.getElementById('event-select').addEventListener('change', (e) => {
+    socket.emit('leave:checkin', currentEventId);
+    currentEventId = e.target.value;
+    socket.emit('join:checkin', currentEventId);
+  });
+
+  let resultHideTimer = null;
+  function showResult(ok, message) {
+    const el = document.getElementById('result');
+    clearTimeout(resultHideTimer);
+
+    el.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+    el.classList.add(ok ? 'bg-green-100' : 'bg-red-100', ok ? 'text-green-800' : 'text-red-800');
+    el.textContent = message;
+
+    // Vibrate as a tactile backup in case attention is on the phone/scanner
+    // rather than the screen text. No scrollIntoView needed - it's pinned
+    // to the viewport via position:fixed, so it's always visible.
+    if (navigator.vibrate) navigator.vibrate(ok ? 120 : [100, 60, 100]);
+
+    // Auto-dismiss so it doesn't sit there blocking the header forever -
+    // the table roster panel (if shown) stays visible independently below.
+    resultHideTimer = setTimeout(() => el.classList.add('hidden'), 5000);
+  }
+
+  function renderTablePanel(ticket, members) {
+    currentTicketId = ticket.id;
+    const panel = document.getElementById('table-panel');
+    const list = document.getElementById('table-members');
+    panel.classList.remove('hidden');
+    list.innerHTML = members.map(m => `
+      <div class="py-2 flex items-center justify-between text-sm">
+        <span>${m.fullName}${m.isOwner ? ' <span class="text-xs text-carnival-gold">(Owner)</span>' : ''}</span>
+        ${m.checkedInAt
+          ? '<span class="text-xs text-green-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Checked in</span>'
+          : '<button class="admit-btn bg-carnival-green text-white text-xs font-semibold px-3 py-1 rounded-full" data-member-id="' + m.id + '">Admit</button>'
+        }
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.admit-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const res = await fetch('/staff/checkin/table-member', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ticketId: currentTicketId, memberId: btn.dataset.memberId })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showResult(true, `Admitted: ${data.member.fullName} (${data.checkedInCount}/${data.seatsTotal})`);
+          btn.outerHTML = '<span class="text-xs text-green-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Checked in</span>';
+        } else {
+          showResult(false, data.reason || 'Could not check in this guest.');
+        }
+      });
+    });
+  }
+
+  async function submitCode(code) {
+    try {
+      const res = await fetch('/staff/checkin/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, eventId: currentEventId })
+      });
+      const data = await res.json();
+      document.getElementById('table-panel').classList.add('hidden');
+
+      if (data.isTable) {
+        showResult(true, `Table ticket for ${data.ticket.holderName} - select a guest below.`);
+        renderTablePanel(data.ticket, data.members);
+      } else if (data.ok) {
+        showResult(true, `Checked in: ${data.ticket.holderName}`);
+      } else {
+        showResult(false, data.reason || 'Check-in failed.');
+      }
+    } catch (err) {
+      showResult(false, 'Network error. Try again.');
+    }
+  }
+
+  document.getElementById('fallback-submit').addEventListener('click', () => {
+    const val = document.getElementById('fallback-input').value.trim();
+    if (val) submitCode(val);
+  });
+
+  document.getElementById('walkin-submit').addEventListener('click', async () => {
+    const name = document.getElementById('walkin-name').value.trim();
+    if (!name || !currentTicketId) return;
+    const res = await fetch('/staff/checkin/table-member/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ticketId: currentTicketId, fullName: name })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showResult(true, `Admitted walk-up guest: ${data.member.fullName} (${data.checkedInCount}/${data.seatsTotal})`);
+      document.getElementById('walkin-name').value = '';
+    } else {
+      showResult(false, data.reason || 'Could not add this guest.');
+    }
+  });
+
+  const qrReader = new Html5Qrcode('qr-reader');
+  let scanning = false;
+  Html5Qrcode.getCameras().then(cameras => {
+    if (cameras && cameras.length) {
+      qrReader.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+          if (!scanning) {
+            scanning = true;
+            submitCode(decodedText);
+            setTimeout(() => { scanning = false; }, 2000);
+          }
+        },
+        () => {}
+      );
+    }
+  }).catch(() => {
+    document.getElementById('qr-reader').innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Camera not available - use the manual code field below.</p>';
+  });
+
+  socket.on('ticket:checked_in', (data) => {
+    if (data.eventId === currentEventId) {
+      showResult(true, `${data.holderName} checked in (live update)`);
+    }
+  });
+</script>

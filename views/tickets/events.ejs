@@ -1,0 +1,35 @@
+<section class="max-w-4xl mx-auto px-4 py-10">
+  <h1 class="text-3xl font-bold text-carnival-green mb-6">Tickets</h1>
+  <div class="space-y-6">
+    <% events.forEach(e => { %>
+      <div class="bg-white rounded-2xl shadow overflow-hidden">
+        <% if (e.posterUrl) { %><img src="<%= e.posterUrl %>" class="w-full h-40 object-cover"><% } %>
+        <div class="p-5">
+          <p class="font-bold text-carnival-green text-lg"><%= e.name %></p>
+          <p class="text-sm text-gray-500 mb-4"><%= e.venue %> &middot; <%= new Date(e.eventDate).toLocaleString() %></p>
+
+          <div class="grid sm:grid-cols-2 gap-3">
+            <% e.tiers.forEach(tier => { %>
+              <div class="border rounded-xl p-4 flex flex-col">
+                <div class="flex items-center gap-2 mb-1">
+                  <i class="fa-solid <%= tier.tierType === 'table' ? 'fa-users' : (tier.name.toLowerCase().includes('vip') ? 'fa-star' : 'fa-ticket') %> text-carnival-gold"></i>
+                  <p class="font-bold"><%= tier.name %></p>
+                </div>
+                <% if (tier.tierType === 'table') { %>
+                  <p class="text-xs text-gray-500 mb-2">Seats <%= tier.seatsIncluded %> people</p>
+                <% } %>
+                <p class="text-xl font-extrabold text-carnival-green mb-3">₦<%= Number(tier.priceNaira).toLocaleString() %></p>
+                <a href="/tickets/tier/<%= tier.id %>/buy"
+                   class="mt-auto text-center bg-carnival-green text-white text-sm font-semibold py-2 rounded-full hover:opacity-90">
+                  Buy
+                </a>
+              </div>
+            <% }) %>
+            <% if (!e.tiers.length) { %><p class="text-sm text-gray-400 col-span-2">Tickets not on sale yet.</p><% } %>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+    <% if (!events.length) { %><p class="text-gray-500">No events on sale right now.</p><% } %>
+  </div>
+</section>

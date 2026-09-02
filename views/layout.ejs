@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | The Carnival Queen</title>
+  <link rel="stylesheet" href="/public/css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Initialized here (before any page content) rather than in main.js at
+    // the bottom of the page - inline scripts further down the page (e.g.
+    // leaderboard.ejs, staff/checkin.ejs) run immediately as the parser
+    // reaches them and need window.appSocket to already exist by then.
+    window.appSocket = io();
+  </script>
+</head>
+<body class="bg-carnival-cream text-gray-900 min-h-screen flex flex-col pb-16 md:pb-0">
+
+  <%- include('partials/navbar') %>
+
+  <% if (currentUser && currentUser.role === 'staff' && currentPath !== '/staff/checkin') { %>
+    <div class="bg-carnival-gold text-carnival-green sticky top-[57px] z-30 shadow">
+      <div class="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between text-sm font-semibold">
+        <span><i class="fa-solid fa-circle-info mr-1"></i> You're signed in as check-in staff.</span>
+        <a href="/staff/checkin" class="flex items-center gap-1.5 bg-carnival-green text-white px-3 py-1.5 rounded-full hover:opacity-90">
+          <i class="fa-solid fa-qrcode"></i> Back to Check-in
+        </a>
+      </div>
+    </div>
+  <% } %>
+
+  <main class="flex-1">
+    <% if (typeof success !== 'undefined' && success.length) { %>
+      <div class="max-w-3xl mx-auto mt-4 px-4">
+        <% success.forEach(msg => { %>
+          <div class="bg-green-100 text-green-800 border border-green-300 rounded-lg px-4 py-3 mb-2"><%= msg %></div>
+        <% }) %>
+      </div>
+    <% } %>
+    <% if (typeof error !== 'undefined' && error.length) { %>
+      <div class="max-w-3xl mx-auto mt-4 px-4">
+        <% error.forEach(msg => { %>
+          <div class="bg-red-100 text-red-800 border border-red-300 rounded-lg px-4 py-3 mb-2"><%= msg %></div>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <%- body %>
+  </main>
+
+  <%- include('partials/footer') %>
+  <%- include('partials/bottom-nav') %>
+  <script src="/public/js/main.js"></script>
+</body>
+</html>

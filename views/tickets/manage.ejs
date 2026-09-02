@@ -1,0 +1,43 @@
+<section class="max-w-md mx-auto px-4 py-10">
+  <a href="/tickets/my/<%= ticket.id %>" class="text-sm text-carnival-green font-semibold hover:underline">
+    <i class="fa-solid fa-arrow-left mr-1"></i> Back to ticket
+  </a>
+
+  <h1 class="text-xl font-bold text-carnival-green mt-4 mb-1">Manage Your Table</h1>
+  <p class="text-sm text-gray-500 mb-6">
+    <%= ticket.event.name %> &middot; <%= ticket.members.length %> / <%= ticket.tier.seatsIncluded %> seats named
+  </p>
+
+  <div class="bg-white rounded-2xl shadow divide-y mb-6">
+    <% ticket.members.forEach(m => { %>
+      <div class="p-4 flex items-center justify-between">
+        <div>
+          <p class="font-semibold text-sm">
+            <%= m.fullName %>
+            <% if (m.isOwner) { %><span class="text-xs text-carnival-gold ml-1">(You, Owner)</span><% } %>
+          </p>
+          <% if (m.phone) { %><p class="text-xs text-gray-400"><%= m.phone %></p><% } %>
+        </div>
+        <% if (m.checkedInAt) { %>
+          <span class="text-xs text-green-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Checked in</span>
+        <% } else if (!m.isOwner) { %>
+          <form action="/tickets/my/<%= ticket.id %>/members/<%= m.id %>/delete" method="POST">
+            <button class="text-xs text-red-500 font-semibold">Remove</button>
+          </form>
+        <% } %>
+      </div>
+    <% }) %>
+  </div>
+
+  <% if (ticket.members.length < ticket.tier.seatsIncluded) { %>
+    <form action="/tickets/my/<%= ticket.id %>/members" method="POST" class="bg-white rounded-2xl shadow p-5 space-y-3">
+      <p class="text-sm font-semibold text-carnival-green">Add a Guest</p>
+      <input name="fullName" placeholder="Full name" required class="w-full border rounded-lg px-3 py-2 text-sm">
+      <input name="phone" placeholder="Phone (optional)" class="w-full border rounded-lg px-3 py-2 text-sm">
+      <p class="text-xs text-gray-400">Staff will check this exact name against ID at the door - make sure it matches.</p>
+      <button class="w-full bg-carnival-green text-white font-semibold py-2 rounded-full hover:opacity-90">Add Guest</button>
+    </form>
+  <% } else { %>
+    <p class="text-center text-sm text-gray-500">All seats are named. Remove a guest above to free up a seat.</p>
+  <% } %>
+</section>

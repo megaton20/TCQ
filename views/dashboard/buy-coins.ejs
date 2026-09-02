@@ -1,0 +1,24 @@
+<%- include('_nav', { active: 'wallet' }) %>
+
+<section class="max-w-4xl mx-auto px-4 py-6">
+  <h1 class="text-lg font-bold text-carnival-green mb-1">Buy Coins</h1>
+  <p class="text-gray-500 text-sm mb-4">1 coin = 1 vote = ₦200. Choose a bundle below.</p>
+  <% if (nextUrl) { %>
+    <div class="bg-carnival-gold/15 text-carnival-green text-sm font-semibold rounded-2xl p-4 mb-6 flex items-center gap-2">
+      <i class="fa-solid fa-circle-info"></i> You'll be sent straight back to finish voting after this.
+    </div>
+  <% } %>
+  <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+    <% bundles.forEach(b => { %>
+      <div class="bg-white rounded-2xl shadow p-5 flex flex-col">
+        <p class="font-bold text-carnival-green text-lg"><%= b.name %></p>
+        <p class="text-sm text-gray-500 mb-3"><%= b.votesEquivalent %> votes</p>
+        <p class="text-2xl font-extrabold mb-4">₦<%= Number(b.priceNaira).toLocaleString() %></p>
+        <form action="/wallet/buy/<%= b.id %>" method="POST" class="mt-auto">
+          <input type="hidden" name="next" value="<%= nextUrl %>">
+          <button class="w-full bg-carnival-green text-white font-semibold py-2 rounded-full hover:opacity-90">Buy Now</button>
+        </form>
+      </div>
+    <% }) %>
+  </div>
+</section>

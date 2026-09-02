@@ -1,0 +1,22 @@
+<%
+  // `active` is passed in by each dashboard view to highlight the current tab.
+  const tabs = [
+    { key: 'overview', label: 'Overview', href: '/dashboard', icon: 'fa-house' },
+    { key: 'wallet', label: 'Wallet', href: '/dashboard/wallet', icon: 'fa-wallet' },
+    { key: 'votes', label: 'Votes', href: '/dashboard/votes', icon: 'fa-check-to-slot' },
+    { key: 'tickets', label: 'Tickets', href: '/dashboard/tickets', icon: 'fa-ticket' },
+    { key: 'settings', label: 'Settings', href: '/dashboard/settings', icon: 'fa-gear' }
+  ];
+%>
+<div class="max-w-4xl mx-auto px-4 pt-4">
+  <div class="flex gap-1 bg-gray-100 rounded-full p-1 overflow-x-auto text-sm font-semibold">
+    <% tabs.forEach(tab => { %>
+      <a href="<%= tab.href %>"
+         class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-full whitespace-nowrap transition
+                <%= active === tab.key ? 'bg-carnival-green text-white' : 'text-gray-600 hover:bg-gray-200' %>">
+        <i class="fa-solid <%= tab.icon %>"></i>
+        <span class="hidden sm:inline"><%= tab.label %></span>
+      </a>
+    <% }) %>
+  </div>
+</div>

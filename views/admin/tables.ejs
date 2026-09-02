@@ -1,0 +1,55 @@
+<section class="max-w-5xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-carnival-green mb-2">Table Management</h1>
+  <p class="text-sm text-gray-500 mb-6">Every table ticket sold, who owns it, and who's on the guest list. Staff verify against this roster at check-in.</p>
+
+  <div class="space-y-5">
+    <% tables.forEach(t => { %>
+      <% const checkedIn = t.members.filter(m => m.checkedInAt).length; %>
+      <div class="bg-white rounded-2xl shadow p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <p class="font-bold"><%= t.tier.name %> &middot; <%= t.event.name %></p>
+            <p class="text-sm text-gray-500">Owner: <%= t.buyer.fullName %> (<%= t.buyer.email %>)</p>
+          </div>
+          <span class="text-xs font-bold bg-carnival-gold/20 text-carnival-green px-3 py-1 rounded-full">
+            <%= checkedIn %> / <%= t.tier.seatsIncluded %> checked in
+          </span>
+        </div>
+
+        <div class="divide-y border-t border-b mb-3">
+          <% t.members.forEach(m => { %>
+            <div class="py-2 flex items-center justify-between text-sm">
+              <span>
+                <%= m.fullName %>
+                <% if (m.isOwner) { %><span class="text-xs text-carnival-gold ml-1">(Owner)</span><% } %>
+                <% if (m.addedAtDoor) { %><span class="text-xs text-gray-400 ml-1">(added at door)</span><% } %>
+              </span>
+              <div class="flex items-center gap-3">
+                <% if (m.checkedInAt) { %>
+                  <span class="text-xs text-green-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Checked in</span>
+                <% } else { %>
+                  <span class="text-xs text-gray-400">Not yet arrived</span>
+                  <% if (!m.isOwner) { %>
+                    <form action="/admin/tables/members/<%= m.id %>/delete" method="POST">
+                      <button class="text-xs text-red-500">Remove</button>
+                    </form>
+                  <% } %>
+                <% } %>
+              </div>
+            </div>
+          <% }) %>
+          <% if (!t.members.length) { %><p class="py-2 text-sm text-gray-400">No guests registered yet.</p><% } %>
+        </div>
+
+        <% if (t.members.length < t.tier.seatsIncluded) { %>
+          <form action="/admin/tables/<%= t.id %>/members" method="POST" class="flex gap-2">
+            <input name="fullName" placeholder="Guest full name" required class="flex-1 border rounded-lg px-3 py-1.5 text-sm">
+            <input name="phone" placeholder="Phone (optional)" class="w-32 border rounded-lg px-3 py-1.5 text-sm">
+            <button class="bg-carnival-green text-white text-sm font-semibold px-4 rounded-full">Add Guest</button>
+          </form>
+        <% } %>
+      </div>
+    <% }) %>
+    <% if (!tables.length) { %><p class="text-gray-500">No table tickets sold yet.</p><% } %>
+  </div>
+</section>

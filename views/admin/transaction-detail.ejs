@@ -1,0 +1,63 @@
+<%
+  const statusColor = transaction.status === 'success' ? 'bg-green-100 text-green-700'
+    : (transaction.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700');
+%>
+<section class="max-w-2xl mx-auto px-4 py-10">
+  <a href="/admin/transactions" class="text-sm text-carnival-green font-semibold hover:underline">
+    <i class="fa-solid fa-arrow-left mr-1"></i> Back to Transactions
+  </a>
+
+  <div class="bg-white rounded-2xl shadow p-6 mt-4">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-xl font-bold text-carnival-green capitalize"><%= transaction.type.replace('_', ' ') %></h1>
+      <span class="text-xs uppercase font-bold px-3 py-1 rounded-full <%= statusColor %>"><%= transaction.status %></span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-y-3 text-sm mb-4">
+      <span class="text-gray-500">User</span>
+      <span class="font-semibold text-right"><%= transaction.user.fullName %> (<%= transaction.user.email %>)</span>
+
+      <span class="text-gray-500">Date &amp; Time</span>
+      <span class="font-semibold text-right"><%= new Date(transaction.createdAt).toLocaleString() %></span>
+
+      <span class="text-gray-500">Reference</span>
+      <span class="font-mono text-xs text-right break-all"><%= transaction.paystackReference || '-' %></span>
+
+      <% if (transaction.amountNaira) { %>
+        <span class="text-gray-500">Amount</span>
+        <span class="font-semibold text-right">₦<%= Number(transaction.amountNaira).toLocaleString() %></span>
+      <% } %>
+      <% if (transaction.coinAmount) { %>
+        <span class="text-gray-500">Coins</span>
+        <span class="font-semibold text-right"><%= Number(transaction.coinAmount).toLocaleString() %></span>
+      <% } %>
+    </div>
+
+    <% if (transaction.type === 'bundle_purchase' && transaction.bundle) { %>
+      <div class="border-t pt-4 text-sm">
+        <p class="font-semibold text-carnival-green mb-1">Bundle Purchased</p>
+        <p><%= transaction.bundle.name %> &middot; <%= transaction.bundle.votesEquivalent %> votes</p>
+      </div>
+    <% } %>
+
+    <% if (transaction.type === 'vote_spend' && transaction.vote) { %>
+      <div class="border-t pt-4 text-sm">
+        <p class="font-semibold text-carnival-green mb-1">Vote Details</p>
+        <p>
+          <a href="/contestants/<%= transaction.vote.contestant.slug %>" class="hover:underline font-semibold">
+            <%= transaction.vote.contestant.fullName %>
+          </a>
+          &middot; <%= transaction.vote.voteCount %> votes &middot; <span class="capitalize"><%= transaction.vote.method %></span>
+        </p>
+      </div>
+    <% } %>
+
+    <% if (transaction.type === 'ticket_purchase' && transaction.ticket) { %>
+      <div class="border-t pt-4 text-sm">
+        <p class="font-semibold text-carnival-green mb-1">Ticket Details</p>
+        <p><%= transaction.ticket.event.name %><% if (transaction.ticket.tier) { %> &middot; <%= transaction.ticket.tier.name %><% } %></p>
+        <p class="capitalize text-xs text-gray-500 mt-1">Status: <%= transaction.ticket.status.replace('_', ' ') %></p>
+      </div>
+    <% } %>
+  </div>
+</section>

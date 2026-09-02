@@ -1,0 +1,30 @@
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-carnival-green text-white flex justify-around items-center h-16 z-50 border-t border-white/10">
+  <a href="/" class="flex flex-col items-center text-xs gap-1">
+    <i class="fa-solid fa-house text-lg"></i> Home
+  </a>
+  <a href="/contestants" class="flex flex-col items-center text-xs gap-1">
+    <i class="fa-solid fa-check-to-slot text-lg"></i> Vote
+  </a>
+  <a href="/leaderboard" class="flex flex-col items-center text-xs gap-1">
+    <i class="fa-solid fa-trophy text-lg"></i> Ranks
+  </a>
+  <a href="/tickets" class="flex flex-col items-center text-xs gap-1">
+    <i class="fa-solid fa-ticket text-lg"></i> Tickets
+  </a>
+  <% if (currentUser) { %>
+    <%
+      const accountHref = currentUser.role === 'staff' ? '/staff/checkin'
+        : (['admin', 'superadmin'].includes(currentUser.role) ? '/admin' : '/dashboard');
+      const accountIcon = currentUser.role === 'staff' ? 'fa-qrcode'
+        : (['admin', 'superadmin'].includes(currentUser.role) ? 'fa-gauge' : 'fa-user');
+      const accountLabel = currentUser.role === 'staff' ? 'Check-in' : 'Account';
+    %>
+    <a href="<%= accountHref %>" class="flex flex-col items-center text-xs gap-1">
+      <i class="fa-solid <%= accountIcon %> text-lg"></i> <%= accountLabel %>
+    </a>
+  <% } else { %>
+    <a href="/auth/login" class="flex flex-col items-center text-xs gap-1">
+      <i class="fa-solid fa-lock text-lg"></i> Login
+    </a>
+  <% } %>
+</nav>

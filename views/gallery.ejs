@@ -1,0 +1,16 @@
+<section class="max-w-6xl mx-auto px-4 py-12">
+  <h1 class="text-3xl font-bold text-carnival-green mb-2">Gallery</h1>
+  <p class="text-sm text-gray-500 mb-6">
+    <%= images.length %> photo<%= images.length === 1 ? '' : 's' %>
+  </p>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <% images.forEach(img => { %>
+      <a href="<%= img.url %>" target="_blank" class="block aspect-square overflow-hidden rounded-xl bg-gray-200 group">
+        <img src="<%= img.url %>" alt="Gallery photo" class="w-full h-full object-cover group-hover:scale-105 transition">
+      </a>
+    <% }) %>
+    <% if (!images.length) { %>
+      <p class="col-span-full text-gray-500">No photos yet. Check back soon!</p>
+    <% } %>
+  </div>
+</section>

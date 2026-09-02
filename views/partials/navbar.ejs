@@ -1,0 +1,45 @@
+<header class="bg-carnival-green text-white sticky top-0 z-40 shadow-md">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="/" class="flex items-center">
+      <img src="/public/img/logo.png" alt="The Carnival Queen" class="h-9 w-auto">
+    </a>
+
+    <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+      <a href="/" class="hover:text-carnival-gold">Home</a>
+      <a href="/contestants" class="hover:text-carnival-gold">Contestants</a>
+      <a href="/leaderboard" class="hover:text-carnival-gold">Leaderboard</a>
+      <a href="/gallery" class="hover:text-carnival-gold">Gallery</a>
+      <a href="/tickets" class="hover:text-carnival-gold">Tickets</a>
+      <a href="/about" class="hover:text-carnival-gold">About</a>
+      <a href="/contact" class="hover:text-carnival-gold">Contact</a>
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <% if (currentUser) { %>
+        <% if (currentUser.role === 'voter') { %>
+          <span class="hidden sm:flex items-center gap-1.5 text-sm bg-carnival-gold text-carnival-green font-semibold px-3 py-1 rounded-full">
+            <i class="fa-solid fa-coins"></i> <%= currentUser.wallet ? Number(currentUser.wallet.coinBalance).toLocaleString() : 0 %>
+          </span>
+        <% } %>
+        <%
+          // Everyone's account icon goes somewhere useful for THEM, not a
+          // one-size-fits-all customer dashboard - staff especially need a
+          // quick way back to check-in if they've navigated away.
+          const accountHref = currentUser.role === 'staff' ? '/staff/checkin'
+            : (['admin', 'superadmin'].includes(currentUser.role) ? '/admin' : '/dashboard');
+          const accountIcon = currentUser.role === 'staff' ? 'fa-qrcode'
+            : (['admin', 'superadmin'].includes(currentUser.role) ? 'fa-gauge' : 'fa-user');
+          const accountLabel = currentUser.role === 'staff' ? 'Back to Check-in'
+            : (['admin', 'superadmin'].includes(currentUser.role) ? 'Admin Dashboard' : 'My Dashboard');
+        %>
+        <a href="<%= accountHref %>" aria-label="<%= accountLabel %>" title="<%= accountLabel %>"
+           class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20">
+          <i class="fa-solid <%= accountIcon %> text-lg"></i>
+        </a>
+      <% } else { %>
+        <a href="/auth/login" class="text-sm font-medium hover:text-carnival-gold">Log In</a>
+        <a href="/auth/register" class="bg-carnival-gold text-carnival-green text-sm font-semibold px-4 py-2 rounded-full hover:opacity-90">Sign Up</a>
+      <% } %>
+    </div>
+  </div>
+</header>

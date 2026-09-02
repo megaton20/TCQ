@@ -1,0 +1,74 @@
+<section class="max-w-6xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-carnival-green mb-6">Manage Contestants</h1>
+  <div class="space-y-6">
+    <% contestants.forEach(c => { %>
+      <div class="bg-white rounded-2xl shadow p-5">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <p class="font-bold text-lg"><%= c.fullName %> <% if (c.isWinner) { %><span class="text-carnival-gold text-sm"><i class="fa-solid fa-crown"></i> <%= c.winnerPosition %></span><% } %></p>
+            <p class="text-sm text-gray-500"><%= c.edition.title %> &middot; <span class="capitalize"><%= c.status %></span> &middot; <%= Number(c.voteCount).toLocaleString() %> votes</p>
+          </div>
+          <div class="flex gap-2 flex-wrap text-xs">
+            <form action="/admin/contestants/<%= c.id %>/status" method="POST">
+              <select name="status" onchange="this.form.submit()" class="border rounded-lg px-2 py-1">
+                <option <%= c.status==='pending'?'selected':'' %> value="pending">Pending</option>
+                <option <%= c.status==='approved'?'selected':'' %> value="approved">Approved</option>
+                <option <%= c.status==='rejected'?'selected':'' %> value="rejected">Rejected</option>
+                <option <%= c.status==='disqualified'?'selected':'' %> value="disqualified">Disqualified</option>
+              </select>
+            </form>
+            <form action="/admin/contestants/<%= c.id %>/set-winner" method="POST" class="flex gap-1">
+              <select name="placement" class="border rounded-lg px-2 py-1">
+                <option value="" <%= !c.winnerPosition ? 'selected' : '' %>>No placement</option>
+                <option value="Queen" <%= c.winnerPosition === 'Queen' ? 'selected' : '' %>>Queen (Winner)</option>
+                <option value="1st Runner-up" <%= c.winnerPosition === '1st Runner-up' ? 'selected' : '' %>>1st Runner-up</option>
+                <option value="2nd Runner-up" <%= c.winnerPosition === '2nd Runner-up' ? 'selected' : '' %>>2nd Runner-up</option>
+              </select>
+              <button class="bg-carnival-gold text-carnival-green font-semibold px-3 py-1 rounded-full">Save</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-3">
+          <% c.images.forEach(img => { %>
+            <div class="relative aspect-square rounded-lg overflow-hidden border <%= img.isThumbnail ? 'border-carnival-gold border-2' : 'border-gray-200' %>">
+              <img src="<%= img.url %>" class="w-full h-full object-cover">
+              <span class="absolute top-1 left-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full <%= img.category === 'outreach' ? 'bg-carnival-green text-white' : 'bg-white/80 text-gray-700' %>">
+                <%= img.category %>
+              </span>
+              <div class="absolute bottom-0 inset-x-0 bg-black/50 flex justify-around py-0.5">
+                <form action="/admin/contestants/<%= c.id %>/images/<%= img.id %>/set-thumbnail" method="POST">
+                  <button class="text-white text-[10px]">Thumb</button>
+                </form>
+                <form action="/admin/contestants/<%= c.id %>/images/<%= img.id %>/delete" method="POST">
+                  <button class="text-red-300 text-[10px]">Del</button>
+                </form>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+
+        <form action="/admin/contestants/<%= c.id %>/images" method="POST" enctype="multipart/form-data" class="flex gap-2 mb-4">
+          <input type="file" name="images" multiple accept="image/*" class="text-sm flex-1">
+          <select name="category" class="border rounded-lg px-2 text-sm">
+            <option value="profile">Profile photo</option>
+            <option value="outreach">Charity outreach photo</option>
+          </select>
+          <button class="bg-carnival-green text-white text-sm font-semibold px-4 py-2 rounded-full">Upload</button>
+        </form>
+
+        <% if (c.isWinner) { %>
+          <form action="/admin/contestants/<%= c.id %>/blog" method="POST" class="border-t pt-4">
+            <label class="block text-sm font-semibold text-carnival-green mb-1">
+              <i class="fa-solid fa-crown mr-1"></i> Charity Outreach Blog Content
+            </label>
+            <textarea name="blogContent" rows="4" placeholder="Write about her outreach activities since winning..."
+                      class="w-full border rounded-lg px-3 py-2 text-sm mb-2"><%= c.blogContent || '' %></textarea>
+            <button class="bg-carnival-gold text-carnival-green font-semibold text-sm px-4 py-2 rounded-full">Save Blog Content</button>
+            <a href="/contestants/<%= c.slug %>/blog" target="_blank" class="text-xs text-carnival-green underline ml-3">Preview page &rarr;</a>
+          </form>
+        <% } %>
+      </div>
+    <% }) %>
+  </div>
+</section>
