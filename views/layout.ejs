@@ -5,13 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %> | The Carnival Queen</title>
   <link rel="stylesheet" href="/public/css/styles.css">
+  <link href="/public/img/favicon.ico" rel="icon">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    // Initialized here (before any page content) rather than in main.js at
-    // the bottom of the page - inline scripts further down the page (e.g.
-    // leaderboard.ejs, staff/checkin.ejs) run immediately as the parser
-    // reaches them and need window.appSocket to already exist by then.
+
     window.appSocket = io();
   </script>
 </head>

@@ -5,7 +5,7 @@
     </p>
     <h1 class="text-3xl md:text-5xl font-extrabold mb-4">Crown Her. Your Vote Decides.</h1>
     <p class="max-w-xl mx-auto text-white/80 mb-8">
-      Vote for your favourite contestant using coins, watch the leaderboard update live, and be part of the crowning moment.
+      Vote for your favourite contestant by funding your wallet, watch the leaderboard update live, and be part of the crowning moment. <br> <span>Payment is secure</span>
     </p>
     <a href="<%= currentUser ? '/contestants' : '/auth/login?next=/contestants' %>"
        class="inline-block bg-carnival-gold text-carnival-green font-bold px-8 py-3 rounded-full text-lg hover:opacity-90">
@@ -35,6 +35,27 @@
   </div>
 </section>
 <% } %>
+
+<section class="max-w-4xl mx-auto px-4 py-16 text-center">
+  <p class="uppercase tracking-widest text-carnival-gold text-sm mb-2">About Us</p>
+  <h2 class="text-2xl md:text-3xl font-bold text-carnival-green mb-4">The Carnival Queen</h2>
+  <p class="text-gray-600 max-w-2xl mx-auto mb-6">
+    The Carnival Queen pageant is an all female pageant platform open young women between 
+              the ages of 18-28 where they  can showcase their talents, embrace their cultural heritage, 
+              and advocate for causes close to their hearts. It's a space where each contestant steps 
+              forward as a role model and a leader in her community. <br>
+              We celebrate more than just beauty, we honor the strength, intelligence, and leadership. <br>
+              Our contestants are not only ambassadors of beauty but also champions of resilience, passion, 
+              and positive impact. As they embody the essence of empowerment, they inspire future generations 
+              to break boundaries and reach new heights, creating lasting change in their communities and beyond. <br>
+              <br>
+              Through this event, we unite diverse voices to inspire change and uplift one another.
+  </p>
+  <a href="/about" class="inline-flex items-center gap-2 bg-carnival-green text-white font-semibold px-6 py-3 rounded-full hover:opacity-90">
+    Read More <i class="fa-solid fa-arrow-right"></i>
+  </a>
+</section>
+
 
 <% if (thisYearContestants && thisYearContestants.length) { %>
 <section class="max-w-6xl mx-auto px-4 py-12">
@@ -115,16 +136,7 @@
 </section>
 <% } %>
 
-<% if (lastYearContestants && lastYearContestants.length) { %>
-<section class="max-w-6xl mx-auto px-4 py-12">
-  <h2 class="text-2xl font-bold text-carnival-green mb-6"><%= lastEdition.year %> Contestants</h2>
-  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-    <% lastYearContestants.forEach(contestant => { %>
-      <%- include('partials/contestant-card', { contestant }) %>
-    <% }) %>
-  </div>
-</section>
-<% } %>
+
 
 <% if (galleryPreview && galleryPreview.length) { %>
 <section class="max-w-6xl mx-auto px-4 py-12">
@@ -169,14 +181,3 @@
 </section>
 <% } %>
 
-<section class="max-w-4xl mx-auto px-4 py-16 text-center">
-  <p class="uppercase tracking-widest text-carnival-gold text-sm mb-2">About Us</p>
-  <h2 class="text-2xl md:text-3xl font-bold text-carnival-green mb-4">Celebrating Beauty, Brains & Culture</h2>
-  <p class="text-gray-600 max-w-2xl mx-auto mb-6">
-    The Carnival Queen is a pageantry platform celebrating beauty, intelligence, and culture through
-    a transparent, real-time voting system that puts the outcome directly in the public's hands.
-  </p>
-  <a href="/about" class="inline-flex items-center gap-2 bg-carnival-green text-white font-semibold px-6 py-3 rounded-full hover:opacity-90">
-    Read More <i class="fa-solid fa-arrow-right"></i>
-  </a>
-</section>
