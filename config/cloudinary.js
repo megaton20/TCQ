@@ -7,15 +7,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-/**
- * Minimal custom Multer storage engine that streams the incoming file
- * straight to Cloudinary. Written by hand instead of using
- * multer-storage-cloudinary, which only supports the Cloudinary v1 SDK
- * (v2 causes an ERESOLVE peer-dependency conflict on install).
- *
- * Sets file.path (secure_url) and file.filename (public_id) on the
- * resulting req.file/req.files, matching what the rest of the app expects.
- */
+
 function makeCloudinaryStorage(folder) {
   return {
     _handleFile(req, file, cb) {

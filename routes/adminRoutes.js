@@ -34,10 +34,13 @@ router.get('/', async (req, res, next) => {
     const totalRevenue = isSuperAdmin
       ? (await Transaction.sum('amountNaira', { where: { status: 'success' } })) || 0
       : null;
+    const totalUsers = isSuperAdmin
+      ? (await User.count({ where: {'role':'voter', isActive: true } }))
+      : 0;
 
     res.render('admin/dashboard', {
       title: 'Admin Dashboard',
-      pendingApplications, contestantCount, ticketsSold, doorEntriesCount, totalRevenue,
+      pendingApplications, contestantCount, ticketsSold, doorEntriesCount, totalRevenue,totalUsers,
       isSuperAdmin,
       paystackMode: isSuperAdmin ? getActiveKeyMode() : null
     });
