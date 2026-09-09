@@ -23,13 +23,18 @@
         <p class="text-sm text-gray-500">Total Users</p>
         <p class="text-2xl font-extrabold text-carnival-green"><%= Number(totalUsers).toLocaleString() %></p>
       </div>
+
+       <a href="/admin/events" class="bg-white rounded-2xl shadow p-5 hover:shadow-lg">
+      <p class="text-sm text-gray-500">All Events</p>
+      <p class="text-2xl font-extrabold text-carnival-green"><%= totalEvents %></p>
+    </a>
     <% } else { %>
       <div class="bg-white rounded-2xl shadow p-5">
         <p class="text-sm text-gray-500">Valid Tickets</p>
         <p class="text-2xl font-extrabold text-carnival-green"><%= ticketsSold %></p>
       </div>
     <% } %>
-    
+
     <a href="/admin/applications" class="bg-white rounded-2xl shadow p-5 hover:shadow-lg">
       <p class="text-sm text-gray-500">Pending Applications</p>
       <p class="text-2xl font-extrabold text-carnival-green"><%= pendingApplications %></p>

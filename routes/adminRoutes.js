@@ -37,11 +37,14 @@ router.get('/', async (req, res, next) => {
     const totalUsers = isSuperAdmin
       ? (await User.count({ where: {'role':'voter', isActive: true } }))
       : 0;
+    const totalEvents = isSuperAdmin
+      ? (await Event.count())
+      : 0;
 
     res.render('admin/dashboard', {
       title: 'Admin Dashboard',
       pendingApplications, contestantCount, ticketsSold, doorEntriesCount, totalRevenue,totalUsers,
-      isSuperAdmin,
+      isSuperAdmin,totalEvents,
       paystackMode: isSuperAdmin ? getActiveKeyMode() : null
     });
   } catch (err) { next(err); }

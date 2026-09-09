@@ -65,6 +65,14 @@ function requireVerifiedEmail(req, res, next) {
   }
   next();
 }
+function applicationStatus(req, res, next) {
+  req.applicationStatus = false
+  if (req.applicationStatus == true) {
+    stashReturnTo(req, req.originalUrl);
+    return next();
+  }
+  return res.redirect('/apply/application-notice');
+}
 
 function forwardAuthenticated(req, res, next) {
   if (req.currentUser) {
@@ -76,4 +84,4 @@ function forwardAuthenticated(req, res, next) {
   next();
 }
 
-module.exports = { loadUser, requireAuth, requireRole, requireVerifiedEmail, forwardAuthenticated };
+module.exports = { loadUser, requireAuth, requireRole, requireVerifiedEmail, forwardAuthenticated,applicationStatus };

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { requireAuth, requireVerifiedEmail } = require('../middleware/auth');
+const { requireAuth, requireVerifiedEmail, applicationStatus } = require('../middleware/auth');
 const { Edition, ContestantApplication } = require('../models');
 const { uploadApplicationDocs } = require('../config/cloudinary');
 const { emitAdminFeed } = require('../utils/adminFeed');
@@ -12,7 +12,13 @@ const docFields = uploadApplicationDocs.fields([
   { name: 'guardianConsent', maxCount: 1 }
 ]);
 
-router.get('/', requireAuth, requireVerifiedEmail, async (req, res, next) => {
+
+router.get('/application-notice', requireAuth, (req, res) => {
+  res.render('auth/application-notice', { title: 'Application Closed' });
+});
+
+
+router.get('/', requireAuth, requireVerifiedEmail,applicationStatus, async (req, res, next) => {
   try {
     const currentEdition = await Edition.findOne({ where: { isCurrent: true } });
     const existing = await ContestantApplication.findOne({
@@ -22,7 +28,7 @@ router.get('/', requireAuth, requireVerifiedEmail, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/', requireAuth, requireVerifiedEmail, docFields, async (req, res, next) => {
+router.post('/', requireAuth, requireVerifiedEmail,applicationStatus, docFields, async (req, res, next) => {
   try {
     const currentEdition = await Edition.findOne({ where: { isCurrent: true } });
     if (!currentEdition) {

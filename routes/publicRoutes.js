@@ -74,6 +74,7 @@ router.get('/', async (req, res, next) => {
 
 router.get('/about', (req, res) => res.render('about', { title: 'About Us' }));
 router.get('/contact', (req, res) => res.render('contact', { title: 'Contact Us' }));
+router.get('/contact/dev', (req, res) => res.render('contact-dev', { title: 'Contact developer' }));
 
 router.get('/gallery', (req, res) => {
   res.render('gallery', { title: 'Gallery', images: readGalleryImages() });
