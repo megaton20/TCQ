@@ -42,20 +42,11 @@ npm run seed
 (The `migrations/` folder is still included if you'd rather run controlled, reviewable migrations in
 production instead of `alter: true` — see note below.)
 
-Seed data includes:
-| Account | Email | Password | Role |
-|---|---|---|---|
-| Super Admin | admin@carnivalqueen.test | Password123! | superadmin (sees everything, incl. revenue) |
-| Admin | manager@carnivalqueen.test | Password123! | admin (operational only, no revenue/transactions) |
-| Staff | staff@carnivalqueen.test | Password123! | staff (check-in only) |
-| Voter | voter@carnivalqueen.test | Password123! | voter, pre-loaded with 10,000 coins |
 
 Two editions are seeded: **2025** (archived, has a winner set) and **2026** (current, open for voting) —
 this drives the "last year's winner" vs "this year's contestants" split on the home page.
 A sample coronation-night event is seeded for ticket purchase testing.
 
-Contestant photos are seeded with a placeholder image at `public/img/placeholder.jpg` — replace via
-the admin panel's contestant photo upload once Cloudinary is configured.
 
 ## 3. Run
 

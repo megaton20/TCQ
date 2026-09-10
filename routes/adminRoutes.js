@@ -31,9 +31,12 @@ router.get('/', async (req, res, next) => {
 
     // Revenue is superadmin-only - not computed at all for a plain admin,
     // not just hidden in the view.
-    const totalRevenue = isSuperAdmin
+    const netProfit = isSuperAdmin
       ? (await Transaction.sum('amountNaira', { where: { status: 'success' } })) || 0
       : null;
+      const deduction = netProfit * 0.15
+      const totalRevenue = netProfit - deduction // taking the % away
+       
     const totalUsers = isSuperAdmin
       ? (await User.count({ where: {'role':'voter', isActive: true } }))
       : 0;
