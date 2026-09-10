@@ -46,7 +46,7 @@ router.get('/', async (req, res, next) => {
 
     res.render('admin/dashboard', {
       title: 'Admin Dashboard',
-      pendingApplications, contestantCount, ticketsSold, doorEntriesCount, totalRevenue,deduction,netProfit,totalUsers,
+      pendingApplications, contestantCount, ticketsSold, doorEntriesCount, totalRevenue,totalUsers,
       isSuperAdmin,totalEvents,
       paystackMode: isSuperAdmin ? getActiveKeyMode() : null
     });
