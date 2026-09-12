@@ -485,6 +485,54 @@ router.post('/tables/members/:memberId/delete', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// --- Manage Users & Roles ---
+router.get('/users', async (req, res, next) => {
+  try {
+    const isSuperAdmin = req.currentUser.role === 'superadmin';
+    const search = req.query.q || '';
+    const where = search
+      ? { [Op.or]: [{ fullName: { [Op.iLike]: `%${search}%` } }, { email: { [Op.iLike]: `%${search}%` } }] }
+      : {};
+    const users = await User.findAll({ where, order: [['createdAt', 'DESC']], limit: 100 });
+    res.render('admin/users', { title: 'Manage Users & Roles', users, isSuperAdmin, search });
+  } catch (err) { next(err); }
+});
+
+router.post('/users/:id/role', async (req, res, next) => {
+  try {
+    const targetUser = await User.findByPk(req.params.id);
+    if (!targetUser) {
+      req.flash('error', 'User not found.');
+      return res.redirect('/admin/users');
+    }
+
+    const requestedRole = req.body.role;
+    const isSuperAdmin = req.currentUser.role === 'superadmin';
+    const lowerPrivilegeRoles = ['voter', 'staff']; // what a plain admin is allowed to touch
+
+    if (!isSuperAdmin) {
+      // A plain admin can only move someone between voter <-> staff, and
+      // only if their CURRENT role is also voter/staff - they can't touch
+      // (or grant) admin/superadmin at all.
+      if (!lowerPrivilegeRoles.includes(requestedRole) || !lowerPrivilegeRoles.includes(targetUser.role)) {
+        req.flash('error', "You don't have permission to assign that role.");
+        return res.redirect('/admin/users');
+      }
+    } else if (targetUser.id === req.currentUser.id && requestedRole !== 'superadmin') {
+      // Guard against a superadmin accidentally locking themselves out.
+      req.flash('error', "You can't change your own role.");
+      return res.redirect('/admin/users');
+    }
+
+    const previousRole = targetUser.role;
+    targetUser.role = requestedRole;
+    await targetUser.save();
+
+    req.flash('success', `${targetUser.fullName} changed from ${previousRole} to ${requestedRole}.`);
+    res.redirect('/admin/users');
+  } catch (err) { next(err); }
+});
+
 // --- Staff management ---
 router.get('/staff', async (req, res, next) => {
   try {

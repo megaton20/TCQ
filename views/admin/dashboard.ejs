@@ -59,20 +59,22 @@
     <a href="/admin/tables" class="bg-carnival-green text-white px-4 py-2 rounded-full">Table Management</a>
     <a href="/admin/door-entries" class="bg-carnival-green text-white px-4 py-2 rounded-full">Door Entry Records</a>
     <a href="/admin/staff" class="bg-carnival-green text-white px-4 py-2 rounded-full">Staff</a>
+    <a href="/admin/users" class="bg-carnival-green text-white px-4 py-2 rounded-full">Manage Users</a>
     <% if (isSuperAdmin) { %>
       <a href="/admin/tickets" class="bg-carnival-gold text-carnival-green px-4 py-2 rounded-full">Tickets</a>
       <a href="/admin/transactions" class="bg-carnival-gold text-carnival-green px-4 py-2 rounded-full">Transactions</a>
-    <% } %>
-  </div>
-
-  <div class="grid <%= isSuperAdmin ? 'md:grid-cols-2' : '' %> gap-6">
+      <% } %>
+      <a href="/dashboard" class="bg-carnival-green text-white px-4 py-2 rounded-full">My Profile</a>
+    </div>
+    
+    <div class="grid <%= isSuperAdmin ? 'md:grid-cols-2' : '' %> gap-6">
     <div>
       <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Live Activity</h2>
       <div id="admin-feed" class="bg-white rounded-2xl shadow divide-y max-h-96 overflow-y-auto">
         <p class="p-4 text-sm text-gray-400" id="admin-feed-empty">Waiting for activity...</p>
       </div>
     </div>
-
+    
     <% if (isSuperAdmin) { %>
       <div>
         <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Live Revenue</h2>

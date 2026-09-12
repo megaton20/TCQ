@@ -1,0 +1,51 @@
+<section class="max-w-4xl mx-auto px-4 py-10">
+
+      <a href="/admin" class="text-sm text-carnival-green font-semibold hover:underline">
+    <i class="fa-solid fa-arrow-left mr-1"></i> Back
+  </a>
+  
+  <h1 class="text-2xl font-bold text-carnival-green mb-2">Manage Users & Roles</h1>
+  <p class="text-sm text-gray-500 mb-6">
+    <% if (isSuperAdmin) { %>
+      You can assign any role, including admin and superadmin.
+    <% } else { %>
+      You can promote voters to staff, or demote staff back to voter. Only a superadmin can grant admin access.
+    <% } %>
+  </p>
+
+  <form action="/admin/users" method="GET" class="mb-6">
+    <input name="q" value="<%= search %>" placeholder="Search by name or email"
+           class="w-full border rounded-lg px-3 py-2 text-sm">
+  </form>
+
+  <div class="bg-white rounded-2xl shadow divide-y">
+    <% users.forEach(u => { %>
+      <div class="p-4 flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="font-semibold truncate"><%= u.fullName %></p>
+          <p class="text-xs text-gray-500 truncate"><%= u.email %></p>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <span class="text-xs font-bold uppercase px-2 py-1 rounded-full
+            <%= u.role === 'superadmin' ? 'bg-carnival-gold text-carnival-green'
+                : (u.role === 'admin' ? 'bg-carnival-green text-white'
+                : (u.role === 'staff' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500')) %>">
+            <%= u.role %>
+          </span>
+          <form action="/admin/users/<%= u.id %>/role" method="POST" class="flex gap-1">
+            <select name="role" class="border rounded-lg px-2 py-1 text-sm">
+              <option value="voter" <%= u.role === 'voter' ? 'selected' : '' %>>Voter</option>
+              <option value="staff" <%= u.role === 'staff' ? 'selected' : '' %>>Staff</option>
+              <% if (isSuperAdmin) { %>
+                <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Manager</option>
+                <!-- <option value="superadmin" <%= u.role === 'superadmin' ? 'selected' : '' %>>Superadmin</option> -->
+              <% } %>
+            </select>
+            <button class="bg-carnival-green text-white text-xs font-semibold px-3 rounded-lg">Save</button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+    <% if (!users.length) { %><p class="p-4 text-sm text-gray-400 text-center">No users found.</p><% } %>
+  </div>
+</section>
