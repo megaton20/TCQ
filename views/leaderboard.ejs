@@ -52,7 +52,7 @@
           <!-- encouraging message -->
           <p class="text-[11px] mt-1 flex items-center gap-1 text-gray-500">
             <i class="fa-solid <%= icon %>"></i>
-            <span><%= message %></span>
+            <!-- <span><%= message %></span> -->
             <span class="text-gray-400">· <%= votes %>/<%= goal %> votes</span>
           </p>
         </div>
@@ -89,7 +89,7 @@
     function getProgress(votes, goal) {
       const pct = Math.min(100, Math.round((votes / goal) * 100));
       let message, barColor, icon;
-      if (pct >= 100)     { message = "Goal smashed! 🎉";   barColor = "bg-carnival-green"; icon = "fa-trophy text-carnival-gold"; }
+      if (pct >= 100)     { message = "Goal smashed!";   barColor = "bg-carnival-green"; icon = "fa-trophy text-carnival-gold"; }
       else if (pct >= 75) { message = "Almost there!";      barColor = "bg-carnival-green"; icon = "fa-fire text-orange-500"; }
       else if (pct >= 50) { message = "Half way there!";    barColor = "bg-yellow-400";     icon = "fa-bolt text-yellow-500"; }
       else if (pct >= 25) { message = "Keep going!";        barColor = "bg-orange-400";     icon = "fa-arrow-trend-up text-orange-500"; }
