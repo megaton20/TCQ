@@ -45,13 +45,19 @@
         </p>
       </div>
 
+    <div class="mb-6">
+       <button id="shareBtn" type="button" class="share-btn inline-flex items-center gap-2 text-sm font-semibold text-carnival-green border border-carnival-green rounded-full px-4 py-2 hover:bg-carnival-green hover:text-white transition">
+         <i class="fa-solid fa-share-nodes"></i> Share link
+        </button>
+      </div>
+      
       <% if (editionIsCurrent && currentUser) { %>
         <form action="/vote/<%= contestant.id %>" method="POST" class="space-y-4" id="vote-form">
           <input type="hidden" name="returnTo" value="/contestants/<%= contestant.slug %>">
           <div>
             <p class="text-sm font-semibold mb-2">Quick Vote</p>
             <div class="flex gap-2 flex-wrap">
-              <% [10, 25, 50, 100, 250].forEach(qty => { %>
+              <% [1, 10, 25, 50, 100, 250].forEach(qty => { %>
                 <button type="submit" name="voteCount" value="<%= qty %>" onclick="document.getElementById('method-input').value='quick'"
                         class="px-4 py-2 rounded-full border border-carnival-green text-carnival-green font-semibold hover:bg-carnival-green hover:text-white">
                   <%= qty %> votes
@@ -121,4 +127,21 @@
   document.getElementById('increment').addEventListener('click', () => { input.value = parseInt(input.value || 0) + 1; updateCost(); });
   document.getElementById('decrement').addEventListener('click', () => { input.value = Math.max(1, parseInt(input.value || 0) - 1); updateCost(); });
   input.addEventListener('input', updateCost);
+</script>
+
+<script>
+    document.getElementById("shareBtn").addEventListener("click", async () => {
+        const url = window.location.href;
+
+        if (navigator.share) {
+            await navigator.share({
+                title: document.title,
+                text: "Check this out",
+                url: url
+            });
+        } else {
+            await navigator.clipboard.writeText(url);
+            alert("Link copied!");
+        }
+    });
 </script>

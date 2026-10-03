@@ -3,36 +3,171 @@
   <p class="text-gray-500 mb-6"><%= currentEdition ? currentEdition.title : '' %> &middot; updates in real time</p>
 
   <ol id="leaderboard-list" class="space-y-3">
-    <% contestants.forEach((c, i) => { %>
+    <% contestants.forEach((c, i) => { 
+         const votes = Number(c.voteCount) || 0;
+         const goal = 2000; // target votes
+         const pct = Math.min(100, Math.round((votes / goal) * 100));
+         // milestone messaging
+         let message, barColor, icon;
+         if (pct >= 100) {
+           message = "Goal smashed! 🎉";
+           barColor = "bg-carnival-green";
+           icon = "fa-trophy text-carnival-gold";
+         } else if (pct >= 75) {
+           message = "Almost there!";
+           barColor = "bg-carnival-green";
+           icon = "fa-fire text-orange-500";
+         } else if (pct >= 50) {
+           message = "Half way there!";
+           barColor = "bg-yellow-400";
+           icon = "fa-bolt text-yellow-500";
+         } else if (pct >= 25) {
+           message = "Keep going!";
+           barColor = "bg-orange-400";
+           icon = "fa-arrow-trend-up text-orange-500";
+         } else {
+           message = "Every vote counts!";
+           barColor = "bg-red-400";
+           icon = "fa-heart text-red-500";
+         }
+    %>
       <li class="flex items-center gap-4 bg-white rounded-2xl shadow p-4" data-id="<%= c.id %>">
         <span class="text-xl font-bold text-carnival-gold w-6"><%= i + 1 %></span>
         <img src="<%= (c.images.find(im => im.isThumbnail) || c.images[0] || {}).url || '/public/img/placeholder.jpg' %>"
              class="w-12 h-12 rounded-full object-cover">
-        <div class="flex-1">
-          <a href="/contestants/<%= c.slug %>" class="font-semibold text-carnival-green hover:underline"><%= c.fullName %></a>
+
+        <div class="flex-1 min-w-0">
+          <a href="/contestants/<%= c.slug %>"
+             class="font-semibold text-carnival-green hover:underline truncate block"><%= c.fullName %></a>
+
+          <!-- progress bar -->
+          <div class="mt-2 flex items-center gap-2">
+            <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div class="h-2 rounded-full <%= barColor %> transition-all duration-500"
+                   style="width: <%= pct %>%"></div>
+            </div>
+            <span class="text-xs font-semibold text-gray-600 w-10 text-right"><%= pct %>%</span>
+          </div>
+
+          <!-- encouraging message -->
+          <p class="text-[11px] mt-1 flex items-center gap-1 text-gray-500">
+            <i class="fa-solid <%= icon %>"></i>
+            <span><%= message %></span>
+            <span class="text-gray-400">· <%= votes %>/<%= goal %> votes</span>
+          </p>
         </div>
-        <span class="font-bold text-lg vote-value"><%= Number(c.voteCount).toLocaleString() %></span>
+
+        <span class="font-bold text-lg vote-value <%= votes < 400 ? 'text-red-700' : votes < 1400 ? 'text-yellow-500' : 'text-carnival-green' %>">
+          <%= votes.toLocaleString() %>
+        </span>
       </li>
     <% }) %>
   </ol>
 </section>
 
 <script>
-  const editionId = "<%= currentEdition ? currentEdition.id : '' %>";
-  const socket = window.appSocket;
-  if (editionId) socket.emit('join:leaderboard', editionId);
+  (function () {
+    const editionId = "<%= currentEdition ? currentEdition.id : '' %>";
+    const GOAL = 2000;
+    const socket = window.appSocket;
 
-  socket.on('leaderboard:update', (data) => {
-    if (data.editionId !== editionId) return;
-    const list = document.getElementById('leaderboard-list');
-    list.innerHTML = data.contestants.map((c, i) => `
-      <li class="flex items-center gap-4 bg-white rounded-2xl shadow p-4" data-id="${c.id}">
-        <span class="text-xl font-bold text-carnival-gold w-6">${i + 1}</span>
-        <div class="flex-1">
-          <a href="/contestants/${c.slug}" class="font-semibold text-carnival-green hover:underline">${c.fullName}</a>
+    if (!socket) {
+      console.error('[lb] window.appSocket is missing — check layout.ejs head');
+      return;
+    }
+    if (!editionId) {
+      console.warn('[lb] no currentEdition — nothing to join');
+      return;
+    }
+
+    // --- Rejoin on every (re)connect. Room membership is lost on reconnect. ---
+    const join = () => socket.emit('join:leaderboard', editionId);
+    if (socket.connected) join();
+    socket.on('connect', join);
+
+    // --- Milestone helper ---
+    function getProgress(votes, goal) {
+      const pct = Math.min(100, Math.round((votes / goal) * 100));
+      let message, barColor, icon;
+      if (pct >= 100)     { message = "Goal smashed! 🎉";   barColor = "bg-carnival-green"; icon = "fa-trophy text-carnival-gold"; }
+      else if (pct >= 75) { message = "Almost there!";      barColor = "bg-carnival-green"; icon = "fa-fire text-orange-500"; }
+      else if (pct >= 50) { message = "Half way there!";    barColor = "bg-yellow-400";     icon = "fa-bolt text-yellow-500"; }
+      else if (pct >= 25) { message = "Keep going!";        barColor = "bg-orange-400";     icon = "fa-arrow-trend-up text-orange-500"; }
+      else                { message = "Every vote counts!"; barColor = "bg-red-400";        icon = "fa-heart text-red-500"; }
+      return { pct, message, barColor, icon };
+    }
+
+    // --- Row template used when a contestant isn't already in the DOM ---
+    function buildRow() {
+      const li = document.createElement('li');
+      li.className = "flex items-center gap-4 bg-white rounded-2xl shadow p-4";
+      li.innerHTML = `
+        <span class="text-xl font-bold text-carnival-gold w-6 rank"></span>
+        <img class="w-12 h-12 rounded-full object-cover avatar" alt="">
+        <div class="flex-1 min-w-0">
+          <a class="font-semibold text-carnival-green hover:underline truncate block name"></a>
+          <div class="mt-2 flex items-center gap-2">
+            <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div class="h-2 rounded-full transition-all duration-500 bar"></div>
+            </div>
+            <span class="text-xs font-semibold text-gray-600 w-10 text-right pct"></span>
+          </div>
+          <p class="text-[11px] mt-1 flex items-center gap-1 text-gray-500">
+            <i class="fa-solid msg-icon"></i>
+            <span class="msg"></span>
+            <span class="text-gray-400 votes-frac"></span>
+          </p>
         </div>
-        <span class="font-bold text-lg vote-value">${Number(c.voteCount).toLocaleString()}</span>
-      </li>
-    `).join('');
+        <span class="font-bold text-lg vote-value"></span>
+      `;
+      return li;
+    }
+
+socket.on('leaderboard:update', (data) => {
+  if (String(data.editionId) !== String(editionId)) return;
+  const list = document.getElementById('leaderboard-list');
+  if (!list) return;
+
+  // Clear and rebuild. No DOM-preservation, no selector mismatches.
+  list.innerHTML = '';
+
+  data.contestants.forEach((c, i) => {
+    const votes = Number(c.voteCount) || 0;
+    const { pct, message, barColor, icon } = getProgress(votes, GOAL);
+
+    const li = document.createElement('li');
+    li.className = "flex items-center gap-4 bg-white rounded-2xl shadow p-4";
+    li.dataset.id = c.id;
+    li.innerHTML = `
+      <span class="text-xl font-bold text-carnival-gold w-6">${i + 1}</span>
+      <img class="w-12 h-12 rounded-full object-cover"
+           src="${c.imageUrl || '/public/img/placeholder.jpg'}"
+           alt="${(c.fullName || '').replace(/"/g, '&quot;')}">
+      <div class="flex-1 min-w-0">
+        <a href="/contestants/${c.slug || ''}"
+           class="font-semibold text-carnival-green hover:underline truncate block">
+          ${c.fullName || ''}
+        </a>
+        <div class="mt-2 flex items-center gap-2">
+          <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div class="h-2 rounded-full ${barColor} transition-all duration-500"
+                 style="width: ${pct}%"></div>
+          </div>
+          <span class="text-xs font-semibold text-gray-600 w-10 text-right">${pct}%</span>
+        </div>
+        <p class="text-[11px] mt-1 flex items-center gap-1 text-gray-500">
+          <i class="fa-solid ${icon}"></i>
+          <span>${message}</span>
+          <span class="text-gray-400">· ${votes}/${GOAL} votes</span>
+        </p>
+      </div>
+      <span class="font-bold text-lg ${
+        votes < 400 ? 'text-red-700' : votes < 1400 ? 'text-yellow-500' : 'text-carnival-green'
+      }">${votes.toLocaleString()}</span>
+    `;
+    list.appendChild(li);
   });
+});
+
+  })();
 </script>

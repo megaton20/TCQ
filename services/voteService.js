@@ -32,12 +32,6 @@ async function castVote(io, userId, contestantId, voteCount, method = 'manual') 
       throw new InsufficientCoinsError('Not enough coins for this vote. Please top up your wallet.');
     }
 
-    // Postgres won't allow FOR UPDATE on a query that outer-joins a
-    // nullable relation (Edition here, since editionId could in theory be
-    // null) - "FOR UPDATE cannot be applied to the nullable side of an
-    // outer join". So lock the Contestant row on its own, then look up its
-    // Edition separately (no lock needed - we're only reading a boolean,
-    // and editions aren't concurrently modified during a vote).
     const contestant = await Contestant.findByPk(contestantId, { transaction: t, lock: t.LOCK.UPDATE });
     if (!contestant || contestant.status !== 'approved') {
       throw new Error('This contestant is not open for voting.');
@@ -90,6 +84,7 @@ async function castVote(io, userId, contestantId, voteCount, method = 'manual') 
     attributes: ['id', 'fullName', 'slug', 'contestantNumber', 'voteCount']
   });
 
+  
   io.to(`leaderboard:${result.contestant.editionId}`).emit('leaderboard:update', {
     editionId: result.contestant.editionId,
     contestants: leaderboard
